@@ -36,12 +36,10 @@ services:
         published: 8080
 #        mode: host
     volumes:
-#      - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /HAfolder/traefik:/etc/traefik
       - /HAfolder/docker/shared:/shared
-      - /HAfolder/traefik/acme/acme.json:/etc/traefik/acme/acme.json
-      - /HAfolders/htpasswd/.htpasswd:/.htpasswd:ro
+      - /HAfolder/htpasswd/.htpasswd:/.htpasswd:ro
     networks:
       - traefik
     deploy:
