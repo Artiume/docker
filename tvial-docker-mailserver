@@ -31,3 +31,14 @@ volumes:
     driver: local
   mailstate:
     driver: local
+
+
+#ENABLE_FAIL2BAN
+#
+#    0 => fail2ban service disabled
+#    1 => Enables fail2ban service
+#
+#If you enable Fail2Ban, don't forget to add the following lines to your docker-compose.yml:
+#
+#cap_add:
+#  - NET_ADMIN
