@@ -1,0 +1,35 @@
+---
+version: "3.7"
+services:
+  openvpn-as:
+    image: linuxserver/openvpn-as
+    container_name: openvpn-as
+#    command:
+    cap_add:
+      - NET_ADMIN
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=${TZ}
+      - INTERFACE=eth0 #optional
+    volumes:
+      - <path to data>:/config
+    networks:
+       - traefik
+       - vpn-net
+    ports:
+      - 943:943
+      - 9443:9443
+      - 1194:1194/udp
+    restart: always
+#    dns:
+#      - 192.168.1.1
+#      - 1.1.1.1
+    
+networks:
+  traefik:
+    external:
+      name: traefik
+  vpn-net
+    external:
+      name: vpn-net
