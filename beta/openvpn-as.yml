@@ -13,7 +13,7 @@ services:
       - TZ=${TZ}
       - INTERFACE=eth0 #optional
     volumes:
-      - <path to data>:/config
+      - ${USERDIR}/openvpn-as:/config
     networks:
        - traefik
        - vpn-net
