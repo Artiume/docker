@@ -1,0 +1,38 @@
+# sudo docker build -t mvance/stubby:latest .
+# sudo docker build -t mvance/unbound:1.9.1-stubby .
+# https://github.com/MatthewVance/stubby-docker/blob/master/unbound/a-records.conf
+---
+ version: '3.7'
+ services:
+   stubby:
+#     image: "mvance/stubby:latest"
+     build:
+       context: stubby
+     networks:
+       - dns
+     restart: always
+   unbound:
+#     image: "mvance/unbound:1.8.3-stubby"
+     build:
+       context: unbound
+     depends_on:
+       - "stubby"    
+     ports:
+       - 8053:53
+       - "8053:53/udp"
+     networks:
+       - dns
+     volumes:
+       - ${USERDIR}/unbound/a-records.conf:/opt/unbound/etc/unbound/a-records.conf:ro
+# pass the unbound directory to enable customized configs
+#
+# unbound.conf
+# local-zone-unbound.conf
+# secret-zone.conf
+# some-other.conf
+#       - ${USERDIR}/unbound:/opt/unbound/etc/unbound/
+     restart: always
+ 
+networks:
+  dns
+name: dns
