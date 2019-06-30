@@ -25,6 +25,6 @@ services:
     restart: unless-stopped
 
 networks:
-  rutorrent
+  rutorrent:
     external:
 name: rutorrent
