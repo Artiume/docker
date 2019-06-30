@@ -1,0 +1,29 @@
+# https://wiki.archlinux.org/index.php/RTorrent
+# https://github.com/rakshasa/rtorrent/wiki/CONFIG-Template
+# https://rtorrent-docs.readthedocs.io/en/latest/cookbook.html#config-template-deconstructed
+---
+version: "3.7"
+services:
+  rutorrent:
+    image: linuxserver/rutorrent
+    container_name: rutorrent
+#    cap_add: #not needed?
+#      - NET_ADMIN
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=${TZ}
+    volumes:
+      - ${USERDIR}/rutorrent/config:/config
+      - ${USERDIR}/rutorrent/downloads:/downloads
+    ports:
+      - 80:80
+      - 5000:5000
+      - 51413:51413
+      - 6881:6881/udp
+    restart: unless-stopped
+
+networks:
+  rutorrent
+    external:
+name: rutorrent
