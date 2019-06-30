@@ -7,7 +7,8 @@ services:
   rutorrent:
     image: linuxserver/rutorrent
     container_name: rutorrent
-#    cap_add: #not needed?
+# not needed?
+#    cap_add:
 #      - NET_ADMIN
     environment:
       - PUID=1000
