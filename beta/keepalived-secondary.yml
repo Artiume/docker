@@ -3,7 +3,7 @@ version: "3.7"
 services:
   keepalived:
     image: osixia/keepalived:2.0.16
-    container_name: keepalived-primary
+    container_name: keepalived-secondary
     cap_add:
       - NET_ADMIN
       - NET_BROADCAST
