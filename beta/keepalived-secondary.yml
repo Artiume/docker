@@ -1,17 +1,17 @@
-# https://github.com/osixia/docker-keepalived
 ---
 version: "3.7"
 services:
   keepalived:
     image: osixia/keepalived:2.0.16
     container_name: keepalived-primary
-    command:
-      - "--detach"
-      - "--net=host"
+#    command:
+#      - "--detach"
+#      - "--net=host"
     cap_add:
       - NET_ADMIN
       - NET_BROADCAST
       - NET_RAW
+    network_mode: "host"
     environment:
       - KEEPALIVED_INTERFACE="eno1"
       - KEEPALIVED_PASSWORD="password!"
