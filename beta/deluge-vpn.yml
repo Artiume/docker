@@ -26,7 +26,8 @@ services:
       - ${USERDIR}/deluge/config:/config
       - /etc/localtime:/etc/localtime:ro
     environment:
-      - PUID=1000
+      - PUID=1000 #Might need to be 0, run id inside container
+      - PGID=1000 #Might need to be 0
       - VPN_ENABLED=yes
       - VPN_USER=username
       - VPN_PASS=password
@@ -41,8 +42,6 @@ services:
       - DELUGE_WEB_LOG_LEVEL=info #critical|error|warning|info|debug
       - DEBUG=false
       - UMASK=000
-      - PUID=1000 #Might need to be 0, run id inside container
-      - PGID=1000 #Might need to be 0
 
 networks:
   vpn-deluge
