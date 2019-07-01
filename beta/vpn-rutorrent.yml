@@ -37,7 +37,8 @@ services:
       - VPN_USER=${VPNUSER}
       - VPN_PASS=${VPNPASS}
       - VPN_PROV=pia #airvpn|custom
-      - VPN_OPTIONS=#additional openvpn cli options
+#      - VPN_OPTIONS=#additional openvpn cli options
+      - LAN_NETWORK=192.168.1.0/24
       - STRICT_PORT_FORWARD=yes
       - ENABLE_PRIVOXY=yes
       - ENABLE_AUTODL_IRSSI=yes
