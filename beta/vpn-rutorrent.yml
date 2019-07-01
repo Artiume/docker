@@ -1,9 +1,16 @@
 # https://wiki.archlinux.org/index.php/RTorrent
 # https://github.com/rakshasa/rtorrent/wiki/CONFIG-Template
 # https://rtorrent-docs.readthedocs.io/en/latest/cookbook.html#config-template-deconstructed
+# Please note this Docker image does not include the required OpenVPN configuration file and certificates. These will typically be downloaded from your VPN providers website (look for OpenVPN configuration files), and generally are zipped.
+# PIA users - The URL to download the OpenVPN configuration files and certs is:-
+# https://www.privateinternetaccess.com/openvpn/openvpn.zip
+# Due to Google and OpenDNS supporting EDNS Client Subnet it is recommended NOT to use either of these NS providers. The list of default NS providers in the example is as follows:-
+# 209.222.x.x = PIA 84.200.x.x = DNS Watch 37.235.x.x = FreeDNS 1.x.x.x = Cloudflare
 # http://<host>:9080/
 # https://<host>:9443/
 # Username:- admin Password:- rutorrent
+# Access Privoxy
+# http://<host>:8118
 ---
 version: "3.7"
 services:
@@ -25,7 +32,7 @@ services:
     environment:
       - PUID=1000 #Might need to be 0, run id inside container
       - PGID=1000 #Might need to be 0
-      - PHP_TZ=<php>
+      - PHP_TZ=${TZ}
       - VPN_ENABLED=yes
       - VPN_USER=${VPNUSER}
       - VPN_PASS=${VPNPASS}
@@ -33,9 +40,9 @@ services:
       - VPN_OPTIONS=#additional openvpn cli options
       - STRICT_PORT_FORWARD=yes
       - ENABLE_PRIVOXY=yes
-      - ENABLE_AUTODL_IRSSI=<yes|no>
-      - ENABLE_RPC2=<yes|no>
-      - ENABLE_RPC2_AUTH=<yes|no>
+      - ENABLE_AUTODL_IRSSI=yes
+      - ENABLE_RPC2=yes
+      - ENABLE_RPC2_AUTH=yes
 #Use specific NS for each VPN service to prevent DNS leakage
       - NAME_SERVERS=209.222.18.222,84.200.69.80,37.235.1.174,1.1.1.1,209.222.18.218,37.235.1.177,84.200.70.40,1.0.0.1
       - DEBUG=false
