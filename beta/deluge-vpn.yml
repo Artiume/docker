@@ -1,13 +1,13 @@
-#https://github.com/binhex/arch-delugevpn
-#Default password for the webui is "deluge"
-#http://<host ip>:8112
-#Access Privoxy
-#http://<host ip>:8118
-#Please note this Docker image does not include the required OpenVPN configuration file and certificates. These will typically be downloaded from your VPN providers website (look for OpenVPN configuration files), and generally are zipped.
-#PIA users - The URL to download the OpenVPN configuration files and certs is:-
-#https://www.privateinternetaccess.com/openvpn/openvpn.zip
-#Due to Google and OpenDNS supporting EDNS Client Subnet it is recommended NOT to use either of these NS providers. The list of default NS providers in the example is as follows:-
-#209.222.x.x = PIA 84.200.x.x = DNS Watch 37.235.x.x = FreeDNS 1.x.x.x = Cloudflare
+# https://github.com/binhex/arch-delugevpn
+# Default password for the webui is "deluge"
+# http://<host ip>:8112
+# Access Privoxy
+# http://<host ip>:8118
+# Please note this Docker image does not include the required OpenVPN configuration file and certificates. These will typically be downloaded from your VPN providers website (look for OpenVPN configuration files), and generally are zipped.
+# PIA users - The URL to download the OpenVPN configuration files and certs is:-
+# https://www.privateinternetaccess.com/openvpn/openvpn.zip
+# Due to Google and OpenDNS supporting EDNS Client Subnet it is recommended NOT to use either of these NS providers. The list of default NS providers in the example is as follows:-
+# 209.222.x.x = PIA 84.200.x.x = DNS Watch 37.235.x.x = FreeDNS 1.x.x.x = Cloudflare
 ---
 version: "3.7"
 services:
