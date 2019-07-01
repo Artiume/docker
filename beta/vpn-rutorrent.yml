@@ -1,18 +1,4 @@
-docker run -d \
-    --cap-add=NET_ADMIN \
-    -p 9080:9080 \
-    -p 9443:9443 \
-    -p 8118:8118 \
-    --name=<container name> \
-    -v <path for>:/data \
-    -v <path for>:/config \
-    -v /etc/localtime:/etc/localtime:ro \
-    -e \
-    -e  \
-
-
-
-    ---
+---
 version: "3.7"
 services:
   vpn-rutorrent:
@@ -21,15 +7,14 @@ services:
     cap_add:
       - NET_ADMIN
     ports:
-      - "8112:8112"
+      - "9080:9080"
+      - "9443:9443"
       - "8118:8118"
-      - "58846:58846"
-      - "58946:58946"
     networks:
       - vpn-rutorrent
     volumes:
-      - ${USERDIR}/deluge/data:/data
-      - ${USERDIR}/deluge/config:/config
+      - ${USERDIR}/vpn-rutorrent/data:/data
+      - ${USERDIR}/vpn-rutorrent/config:/config
       - /etc/localtime:/etc/localtime:ro
     environment:
       - PUID=1000 #Might need to be 0, run id inside container
@@ -49,7 +34,6 @@ services:
       - NAME_SERVERS=209.222.18.222,84.200.69.80,37.235.1.174,1.1.1.1,209.222.18.218,37.235.1.177,84.200.70.40,1.0.0.1
       - DEBUG=false
       - UMASK=000
-
 
 networks:
   vpn-rutorrent:
