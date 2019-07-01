@@ -1,12 +1,22 @@
-# pull from docker hub
-$> docker pull cturra/ntp
 
-# run ntp
-$> docker run --name=ntp             \
-              --restart=always       \
-              --detach=true          \
-              --publish=123:123/udp  \
-              --cap-add=SYS_NICE     \
-              --cap-add=SYS_RESOURCE \
-              --cap-add=SYS_TIME     \
-              cturra/ntp
+---
+version: "3.7"
+services:
+  ntp:
+    image: cturra/ntp
+    container_name: ntp
+    commands:
+      - "--detach=true"
+    cap_add:
+      - SYS_NICE
+      - SYS_RESOURCE
+      - SYS_TIME
+    ports:
+      - "123:123/udp"
+    networks:
+      - ntp
+    restart: always
+
+networks:
+  ntp:
+    name: ntp
