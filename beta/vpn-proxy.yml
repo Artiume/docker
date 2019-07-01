@@ -38,4 +38,4 @@ services:
 
 networks:
   vpn-proxy:
-name: vpn-proxy
+    name: vpn-proxy
