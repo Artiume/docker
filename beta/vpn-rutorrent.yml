@@ -1,3 +1,9 @@
+# https://wiki.archlinux.org/index.php/RTorrent
+# https://github.com/rakshasa/rtorrent/wiki/CONFIG-Template
+# https://rtorrent-docs.readthedocs.io/en/latest/cookbook.html#config-template-deconstructed
+# http://<host>:9080/
+# https://<host>:9443/
+# Username:- admin Password:- rutorrent
 ---
 version: "3.7"
 services:
