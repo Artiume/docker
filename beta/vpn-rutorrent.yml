@@ -37,5 +37,4 @@ services:
 
 networks:
   vpn-rutorrent:
-    external:
-      name: vpn-rutorrent
+    name: vpn-rutorrent
