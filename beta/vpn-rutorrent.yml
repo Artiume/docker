@@ -1,0 +1,57 @@
+docker run -d \
+    --cap-add=NET_ADMIN \
+    -p 9080:9080 \
+    -p 9443:9443 \
+    -p 8118:8118 \
+    --name=<container name> \
+    -v <path for>:/data \
+    -v <path for>:/config \
+    -v /etc/localtime:/etc/localtime:ro \
+    -e \
+    -e  \
+
+
+
+    ---
+version: "3.7"
+services:
+  vpn-rutorrent:
+    image: binhex/arch-rtorrentvpn
+    container_name: vpn-rutorrent
+    cap_add:
+      - NET_ADMIN
+    ports:
+      - "8112:8112"
+      - "8118:8118"
+      - "58846:58846"
+      - "58946:58946"
+    networks:
+      - vpn-rutorrent
+    volumes:
+      - ${USERDIR}/deluge/data:/data
+      - ${USERDIR}/deluge/config:/config
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - PUID=1000 #Might need to be 0, run id inside container
+      - PGID=1000 #Might need to be 0
+      - PHP_TZ=<php>
+      - VPN_ENABLED=yes
+      - VPN_USER=${VPNUSER}
+      - VPN_PASS=${VPNPASS}
+      - VPN_PROV=pia #airvpn|custom
+      - VPN_OPTIONS=#additional openvpn cli options
+      - STRICT_PORT_FORWARD=yes
+      - ENABLE_PRIVOXY=yes
+      - ENABLE_AUTODL_IRSSI=<yes|no>
+      - ENABLE_RPC2=<yes|no>
+      - ENABLE_RPC2_AUTH=<yes|no>
+#Use specific NS for each VPN service to prevent DNS leakage
+      - NAME_SERVERS=209.222.18.222,84.200.69.80,37.235.1.174,1.1.1.1,209.222.18.218,37.235.1.177,84.200.70.40,1.0.0.1
+      - DEBUG=false
+      - UMASK=000
+
+
+networks:
+  vpn-rutorrent:
+    external:
+      name: vpn-rutorrent
