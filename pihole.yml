@@ -13,7 +13,8 @@ services:
     networks:
      pihole_net:
        ipv4_address: 10.0.0.50
- # For DHCP it is recommended to remove these ports and instead add: network_mode: "host"
+# For DHCP it is recommended to remove the ports and instead add: network_mode: "host"
+#    network_mode: "host"
     ports:
       - "53:53/tcp"
       - "53:53/udp"
