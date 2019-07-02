@@ -27,8 +27,8 @@ services:
 #      run touch ${USERDIR}/pihole.log
     environment:
       - ServerIP: 192.168.1.50
-      - DNS1: 10.0.0.50#53
-      - DNS2: "no"
+      - DNS1: 127.0.0.1#53
+      - DNS2: 1.1.1.1
       - IPv6: "no"
       - TZ: ${TZ}
       - PROXY_LOCATION: pihole
