@@ -1,0 +1,42 @@
+# https://github.com/pi-hole/docker-pi-hole/blob/master/docker-compose.yml
+# https://github.com/pi-hole/docker-pi-hole/blob/master/README.md
+---
+version: "3.7"
+services:
+  pihole:
+    container_name: pihole
+    image: pihole/pihole:latest
+    dns: 127.0.0.1
+# Required for DHCP
+#    cap_add:
+#      - NET_ADMIN
+    networks:
+     pihole_net:
+       ipv4_address: 10.0.0.50
+ # For DHCP it is recommended to remove these ports and instead add: network_mode: "host"
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+      - "67:67/udp"
+      - "80:80/tcp"
+      - "443:443/tcp"
+    volumes:
+      - ${USERDIR}}/pihole:/etc/pihole/
+      - ${USERDIR}/pihole/dnsmasq.d:/etc/dnsmasq.d/
+#      run touch ${USERDIR}/pihole.log
+    environment:
+      - ServerIP: 192.168.1.50
+      - DNS1: 10.0.0.50#53
+      - DNS2: "no"
+      - IPv6: "no"
+      - TZ: ${TZ}
+      - PROXY_LOCATION: pihole
+      - WEBPASSWORD: ${PIPASS}
+    restart: unless-stopped
+
+networks:
+  pihole_net:
+    driver: bridge
+    ipam:
+     config:
+       - subnet: 10.0.0.0/26
