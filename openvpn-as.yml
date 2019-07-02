@@ -4,7 +4,6 @@ services:
   openvpn-as:
     image: linuxserver/openvpn-as
     container_name: openvpn-as
-#    command:
     cap_add:
       - NET_ADMIN
     environment:
