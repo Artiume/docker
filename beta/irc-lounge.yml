@@ -1,9 +1,9 @@
 ---
 version: "3.7"
 services:
- irc-client-lounge:
+ irc-lounge:
     image: linuxserver/thelounge
-    container_name: thelounge
+    container_name: irc-lounge
     environment:
       - PUID=1000
       - PGID=1000
