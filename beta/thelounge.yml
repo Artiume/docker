@@ -1,0 +1,23 @@
+---
+version: "3.7"
+services:
+ irc-client-lounge:
+    image: linuxserver/thelounge
+    container_name: thelounge
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=${TZ}
+    network_mode: "service:vpn-proxy"
+    networks:
+      - traefik-net
+    volumes:
+      - ${USERDIR}/irc-lounge:/config
+    ports:
+      - "9000:9000"
+    restart: always
+
+networks:
+  traefik:
+    external:
+      name: traefik-net
