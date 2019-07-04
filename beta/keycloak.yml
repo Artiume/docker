@@ -11,7 +11,8 @@ services:
       - "8780:8080"
     networks:
       - keycloak
-        alias: keycloak
+        aliases: 
+          - keycloak
       - traefik
     volumes:
       - ${USERDIR}/keycloak/config:/config
@@ -59,7 +60,8 @@ services:
       - POSTGRES_PASSWORD=myuberpassword
     networks:
       - keycloak
-        alias: keycloak-db
+        aliases:
+          - keycloak-db
 
   keycloak-db-backup:
     image: postgres
@@ -85,7 +87,8 @@ services:
       EOF'
     networks:
       - keycloak
-        alias: keycloak-db-backup
+        aliases:
+          - keycloak-db-backup
           
 networks:
   keycloak:
