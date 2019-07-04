@@ -1,0 +1,95 @@
+version: '3.7'
+
+services:
+  traefik:
+    image: traefik:latest
+    container_name: traefik
+    command: 
+#      - "storeconfig" #This is the push to consul, secondary traefik must be created and interfaced to this traefik. Remove this traefik's open ports, it shuts down once consul is messaged.
+#      - "--accesslog"
+#      - "--accesslog.filepath=/traefik.log"
+      - "--logLevel=WARN"
+      - "--ping=false"
+#      - "--ping.entrypoint=pingport"
+      - "--api"
+      - "--api.entrypoint=apiport"
+      - "--defaultentrypoints=http,https"
+      - "--entrypoints=Name:http Address::80 Redirect.EntryPoint:https"
+      - "--entrypoints=Name:https Address::443 TLS TLS.SniStrict:true TLS.MinVersion:VersionTLS12 CipherSuites:TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256, TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256, TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384, TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384, TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256, TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256"
+      - "--entrypoints=Name:apiport Address::8080"
+#      - "--entrypoints=Name:pingport Address::8081"
+      - "--acme"
+      - "--acme.storage=/etc/traefik/acme/acme.json"
+      - "--acme.entryPoint=https"
+#      - "--acme.TLS-ALPN-01"
+      - "--acme.dnsChallenge=true"
+      - "--acme.dnsChallenge.provider=godaddy"
+      - "--acme.dnsChallenge.delayBeforeCheck=60"
+      - "--acme.dnsChallenge.resolvers=1.1.1.1,1.0.0.1"
+      - "--acme.onHostRule=true"
+      - "--acme.email=${EMAIL}"
+      - "--acme.acmeLogging=true"
+      - "--acme.domains=${DOMAINNAME},*.${DOMAINNAME},"
+      - "--acme.KeyType=RSA4096"
+#Let's Encrypt's staging server,
+#caServer = "https://acme-staging-v02.api.letsencrypt.org/directory"
+      - "--docker"
+      - "--docker.swarmMode"
+      - "--docker.domain=${DOMAINNAME}"
+      - "--docker.watch"
+      - "--docker.exposedbydefault=false"
+      #- "--consul"
+      #- "--consul.endpoint=consul:8500"
+      #- "--consul.prefix=traefik"
+      - "--retry"
+      - "--file"
+      - "resolvers=[192,168.1.1:53,1.1.1.1:53,]"
+    environment:
+      TZ: ${TZ}
+#      CLOUDFLARE_EMAIL: ${EMAIL}
+#      CLOUDFLARE_API_KEY: ${CFKEY}
+      GODADDY_API_SECRET: ${GODADDYSECRET}
+      GODADDY_API_KEY: ${GODADDYKEY}
+    ports:
+      - target: 80
+        published: 80
+      - target: 443
+        published: 443
+      - target: 8080
+        published: 8080
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ${USERDIR}/traefik/acme.json:/etc/traefik/acme/acme.json
+      - ${USERDIR}/traefik/traefik.log:/traefik.log
+      - ${USERDIR}/traefik/file.toml:/file.toml
+    networks:
+      - traefik
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: traefik
+      traefik.backend: traefik
+      traefik.protocol: http
+      traefik.port: 8080
+      traefik.frontend.rule: Host:traefik.${DOMAINNAME},
+      traefik.frontend.entryPoint: http
+      traefik.frontend.redirect.entryPoint: https
+      traefik.frontend.priority: 1
+      traefik.frontend.passHostHeader: "true"
+      traefik.frontend.headers.SSLForceHost: "true"
+      traefik.frontend.headers.SSLHost: traefik.${DOMAINNAME}
+      traefik.frontend.headers.SSLRedirect: "true"
+      traefik.frontend.headers.browserXSSFilter: "true"
+      traefik.frontend.headers.contentTypeNosniff: "true"
+      traefik.frontend.headers.forceSTSHeader: "true"
+      traefik.frontend.headers.STSSeconds: 315360000
+      traefik.frontend.headers.STSIncludeSubdomains: "true"
+      traefik.frontend.headers.STSPreload: "true"
+      traefik.frontend.headers.customResponseHeaders: X-Robots-Tag:noindex,nofollow,nosnippet,noarchive,notranslate,noimageindex
+      traefik.frontend.headers.frameDeny: "true"
+      traefik.frontend.headers.customFrameOptionsValue: 'allow-from https:${DOMAINNAME}'
+        #traefik.frontend.auth.forward.address: http://oauth:4181
+        #traefik.frontend.auth.basic.users: xxx:xxx
+
+networks:
+  traefik:
+    name: traefik
