@@ -2,6 +2,7 @@
 # https://www.keycloak.org/docs/latest/getting_started/index.html
 # https://hub.docker.com/_/postgres
 # https://hub.docker.com/r/jboss/keycloak/
+# https://github.com/keycloak/keycloak-quickstarts
 ---
 version: "3.7"
 services:
