@@ -10,10 +10,10 @@ services:
     ports:
       - "8780:8080"
     networks:
-      - keycloak
-        aliases: 
+      keycloak:
+        aliases:
           - keycloak
-      - traefik
+      traefik:
     volumes:
       - ${USERDIR}/keycloak/config:/config
       - ${USERDIR}/keycloak/config.json:/config.json
@@ -46,7 +46,7 @@ services:
     volumes:
       - ${USERDIR}/keycloak/database:/var/lib/postgresql/data
       - /etc/localtime:/etc/localtime:ro    
-    environmemt:
+    environment:
       - DB_VENDOR=postgres
       - DB_DATABASE=keycloak
       - DB_ADDR=keycloak-db
@@ -59,7 +59,7 @@ services:
       - POSTGRES_USER=keycloak
       - POSTGRES_PASSWORD=myuberpassword
     networks:
-      - keycloak
+      keycloak:
         aliases:
           - keycloak-db
 
@@ -86,7 +86,7 @@ services:
       done
       EOF'
     networks:
-      - keycloak
+      keycloak:
         aliases:
           - keycloak-db-backup
           
