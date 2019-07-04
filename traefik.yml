@@ -64,6 +64,7 @@ services:
       - ${USERDIR}/traefik/file.toml:/file.toml
     networks:
       - traefik
+    restart: always
     labels:
       traefik.enable: "true"
       traefik.docker.network: traefik
