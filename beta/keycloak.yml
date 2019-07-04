@@ -1,6 +1,7 @@
-#
-#
+# https://www.keycloak.org/documentation.html
+# https://www.keycloak.org/docs/latest/getting_started/index.html
 # https://hub.docker.com/_/postgres
+# https://hub.docker.com/r/jboss/keycloak/
 ---
 version: "3.7"
 services:
@@ -8,7 +9,7 @@ services:
     image: jboss/keycloak
     container_name: keycloak
     ports:
-      - "8780:8080"
+      - "8080:8080"
     networks:
       keycloak:
         aliases:
@@ -23,7 +24,7 @@ services:
 #      - PGID=1000
       - KEYCLOAK_USER=${KEYCLOAKUSER}
       - KEYCLOAK_PASSWORD=${KEYCLOAKPASS}
-      - KEYCLOAK_IMPORT=/config.json
+ #     - KEYCLOAK_IMPORT=/config.json
       - DB_VENDOR=postgres
       - DB_DATABASE=keycloak
       - DB_ADDR=keycloak-db
@@ -36,13 +37,16 @@ services:
       - POSTGRES_USER=keycloak
       - POSTGRES_PASSWORD=myuberpassword
     labels:
+      - traefik.enable=true
+      - traefik.docker.network=traefik
+      - traefik.backend=keycloak
       - traefik.frontend.rule=Host:keycloak.${DOMAINNAME}
       - traefik.port=8080
-      - traefik.docker.network=traefik
 
   keycloak-db:
 #    env_file: /var/data/config/keycloak/keycloak.env
     image: postgres
+    container_name: keycloak-db
     volumes:
       - ${USERDIR}/keycloak/database:/var/lib/postgresql/data
       - /etc/localtime:/etc/localtime:ro    
@@ -57,7 +61,6 @@ services:
       - KEYCLOAK_HOSTNAME=keycloak.${DOMAINNAME}
 # Tell Postgress what user/password to create
       - POSTGRES_USER=keycloak
-      
       - POSTGRES_PASSWORD=myuberpassword
     networks:
       keycloak:
@@ -67,6 +70,7 @@ services:
   keycloak-db-backup:
     image: postgres
 #    env_file: /var/data/config/keycloak/keycloak-backup.env
+    container_name: keycloak-db-backup
     volumes:
       - /var/data/keycloak/database-dump:/dump
       - /etc/localtime:/etc/localtime:ro
@@ -82,7 +86,7 @@ services:
       sleep 2m
       while /bin/true; do
         pg_dump -Fc > /dump/dump_\`date +%d-%m-%Y"_"%H_%M_%S\`.psql
-        (ls -t /dump/dump*.psql|head -n $$BACKUP_NUM_KEEP;ls /dump/dump*.psql)|sort|uniq -u|xargs rm -- {}
+        (ls -t /dump/dump*.psql|head -n $$BACKUP_NUM_KEEP;ls /dump/dump*.psql)|sort|uniq -u|xargs rm -- {} 
         sleep $$BACKUP_FREQUENCY
       done
       EOF'
