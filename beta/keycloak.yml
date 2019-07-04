@@ -57,6 +57,7 @@ services:
       - KEYCLOAK_HOSTNAME=keycloak.${DOMAINNAME}
 # Tell Postgress what user/password to create
       - POSTGRES_USER=keycloak
+      
       - POSTGRES_PASSWORD=myuberpassword
     networks:
       keycloak:
