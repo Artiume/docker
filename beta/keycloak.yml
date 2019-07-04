@@ -1,0 +1,42 @@
+---
+version: "3.7"
+services:
+  keycloak:
+    image: jboss/keycloak
+    container_name: keycloak
+    ports:
+      - "8080:8080"
+    networks:
+      - keycloak
+      - traefik
+    volumes:
+      - ${USERDIR}/keycloak/config:/config
+      - ${USERDIR}/keycloak/config.json:/config.json
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - KEYCLOAK_USER=${KEYCLOAKUSER}
+      - KEYCLOAK_PASSWORD=${KEYCLOAKPASS}
+      - KEYCLOAK_IMPORT=/config.json
+      - DB_VENDOR=postgres
+      - DB_DATABASE=keycloak
+      - DB_ADDR=keycloak-db
+      - DB_USER=keycloak
+      - DB_PASSWORD=myuberpassword
+# This is required to run keycloak behind traefik
+      - PROXY_ADDRESS_FORWARDING=true
+      - KEYCLOAK_HOSTNAME=keycloak.${DOMAINNAME}
+# Tell Postgress what user/password to create
+      - POSTGRES_USER=keycloak
+      - POSTGRES_PASSWORD=myuberpassword
+    labels:
+      - traefik.frontend.rule=Host:keycloak.${DOMAINNAME}
+      - traefik.port=8080
+      - traefik.docker.network=traefik
+
+networks:
+  keycloak:
+    name: keycloak
+  traefik:
+    name: traefik
