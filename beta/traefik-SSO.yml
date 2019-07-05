@@ -1,0 +1,251 @@
+version: '3.7'
+
+services:
+  traefik:
+    image: traefik:latest
+    container_name: traefik
+    command: 
+#      - "storeconfig" #This is the push to consul, secondary traefik must be created and interfaced to this traefik. Remove this traefik's open ports, it shuts down once consul is messaged.
+#      - "--accesslog"
+#      - "--accesslog.filepath=/traefik.log"
+      - "--logLevel=WARN"
+      - "--ping=false"
+#      - "--ping.entrypoint=pingport"
+      - "--api"
+      - "--api.entrypoint=apiport"
+      - "--defaultentrypoints=http,https"
+      - "--entrypoints=Name:http Address::80 Redirect.EntryPoint:https"
+      - "--entrypoints=Name:https Address::443 TLS TLS.SniStrict:true TLS.MinVersion:VersionTLS12 CipherSuites:TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256, TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256, TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384, TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384, TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256, TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256"
+      - "--entrypoints=Name:apiport Address::8080"
+#      - "--entrypoints=Name:pingport Address::8081"
+      - "--acme"
+      - "--acme.storage=/etc/traefik/acme/acme.json"
+      - "--acme.entryPoint=https"
+#      - "--acme.TLS-ALPN-01"
+      - "--acme.dnsChallenge=true"
+      - "--acme.dnsChallenge.provider=godaddy"
+      - "--acme.dnsChallenge.delayBeforeCheck=60"
+      - "--acme.dnsChallenge.resolvers=1.1.1.1,1.0.0.1"
+      - "--acme.onHostRule=true"
+      - "--acme.email=${EMAIL}"
+      - "--acme.acmeLogging=true"
+      - "--acme.domains=${DOMAINNAME},*.${DOMAINNAME},"
+      - "--acme.KeyType=RSA4096"
+#Let's Encrypt's staging server,
+#caServer = "https://acme-staging-v02.api.letsencrypt.org/directory"
+      - "--docker"
+      - "--docker.swarmMode"
+      - "--docker.domain=${DOMAINNAME}"
+      - "--docker.watch"
+      - "--docker.exposedbydefault=false"
+      #- "--consul"
+      #- "--consul.endpoint=consul:8500"
+      #- "--consul.prefix=traefik"
+      - "--retry"
+      - "--file"
+      - "resolvers=[192,168.1.1:53,1.1.1.1:53,]"
+    environment:
+      TZ: ${TZ}
+#      CLOUDFLARE_EMAIL: ${EMAIL}
+#      CLOUDFLARE_API_KEY: ${CFKEY}
+      GODADDY_API_SECRET: ${GODADDYSECRET}
+      GODADDY_API_KEY: ${GODADDYKEY}
+    ports:
+      - target: 80
+        published: 80
+      - target: 443
+        published: 443
+      - target: 8080
+        published: 8080
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ${USERDIR}/traefik/acme.json:/etc/traefik/acme/acme.json
+      - ${USERDIR}/traefik/traefik.log:/traefik.log
+      - ${USERDIR}/traefik/file.toml:/file.toml
+    networks:
+      traefik:
+        aliases:
+          - traefik
+      dockersocketcontainers:
+        aliases:
+          - traefik
+    restart: always
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: traefik
+      traefik.backend: traefik
+      traefik.protocol: http
+      traefik.port: 8080
+      traefik.frontend.rule: Host:traefik.${DOMAINNAME},
+      traefik.frontend.entryPoint: http
+      traefik.frontend.redirect.entryPoint: https
+      traefik.frontend.priority: 1
+      traefik.frontend.passHostHeader: "true"
+      traefik.frontend.headers.SSLForceHost: "true"
+      traefik.frontend.headers.SSLHost: traefik.${DOMAINNAME}
+      traefik.frontend.headers.SSLRedirect: "true"
+      traefik.frontend.headers.browserXSSFilter: "true"
+      traefik.frontend.headers.contentTypeNosniff: "true"
+      traefik.frontend.headers.forceSTSHeader: "true"
+      traefik.frontend.headers.STSSeconds: 315360000
+      traefik.frontend.headers.STSIncludeSubdomains: "true"
+      traefik.frontend.headers.STSPreload: "true"
+      traefik.frontend.headers.customResponseHeaders: X-Robots-Tag:noindex,nofollow,nosnippet,noarchive,notranslate,noimageindex
+      traefik.frontend.headers.frameDeny: "true"
+      traefik.frontend.headers.customFrameOptionsValue: 'allow-from https:${DOMAINNAME}'
+      traefik.frontend.auth.forward.address: http://oauth:4181
+
+# Places a security level proxy on docker socket
+  docker-socket-proxy:
+    image: tecnativa/docker-socket-proxy
+    container_name: docker-socket-proxy
+    command:
+      - "--priviledged"
+    ports:
+      - "127.0.0.1:2375:2375"
+    networks:
+      dockersocketcontainers:
+        aliases:
+          - dockersocketcontainers
+    env:
+    
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /etc/localtime:/etc/localtime:ro
+    restart: always
+
+# The auth gate for SSO
+  traefik-forward-auth:
+#    image: thomseddon/traefik-forward-auth
+    image: funkypenguin/traefik-forward-auth
+    container_name: traefik-forward-auth
+    networks:
+      traefik:
+        aliases:
+          - traefik-forward-auth
+    environment:
+      PUID: 1000
+      PGID: 1000
+      CLIENT_ID: ${AUTHCLIENTID}
+      CLIENT_SECRET: ${AUTHCLIENTSECRET}
+      OIDC_ISSUER: https://keycloak.${DOMAINNAME}/auth/realms/master
+      SECRET: "THISISASECRET"
+      AUTH_HOST: auth.${DOMAINNAME}
+      COOKIE_DOMAINS: ${DOMAINNAME}
+#      WHITELIST: ${EMAIL}
+      COOKIE_SECURE: "true"
+      LIFETIME: "2592000" 
+    restart: always
+    labels:
+      traefik.enable: "true"
+      traefik.port: 4181
+      traefik.frontend.rule: Host:auth.${DOMAINNAME}
+      traefik.frontend.auth.forward.address: http://traefik-forward-auth:4181
+      traefik.frontend.auth.forward.trustForwardHeader: "true"
+      traefik.backend: traefik-forward-auth
+
+# https://www.keycloak.org/documentation.html
+# https://www.keycloak.org/docs/latest/getting_started/index.html
+# https://hub.docker.com/_/postgres
+# https://hub.docker.com/r/jboss/keycloak/
+  keycloak:
+    image: jboss/keycloak
+    container_name: keycloak
+    ports:
+      - "8080:8080"
+    networks:
+      keycloak:
+        aliases:
+          - keycloak
+      traefik:
+    volumes:
+      - ${USERDIR}/keycloak/config:/config
+      - ${USERDIR}/keycloak/config.json:/config.json
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+#      - PUID=1000
+#      - PGID=1000
+      - KEYCLOAK_USER=${KEYCLOAKUSER}
+      - KEYCLOAK_PASSWORD=${KEYCLOAKPASS}
+ #     - KEYCLOAK_IMPORT=/config.json
+      - DB_VENDOR=postgres
+      - DB_DATABASE=keycloak
+      - DB_ADDR=keycloak-db
+      - DB_USER=keycloak
+      - DB_PASSWORD=myuberpassword
+# This is required to run keycloak behind traefik
+      - PROXY_ADDRESS_FORWARDING=true
+      - KEYCLOAK_HOSTNAME=keycloak.${DOMAINNAME}
+# Tell Postgress what user/password to create
+      - POSTGRES_USER=keycloak
+      - POSTGRES_PASSWORD=myuberpassword
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=traefik
+      - traefik.backend=keycloak
+      - traefik.frontend.rule=Host:keycloak.${DOMAINNAME}
+      - traefik.port=8080
+    restart: always
+
+  keycloak-db:
+    image: postgres
+    container_name: keycloak-db
+    volumes:
+      - ${USERDIR}/keycloak/database:/var/lib/postgresql/data
+      - /etc/localtime:/etc/localtime:ro    
+    environment:
+      - DB_VENDOR=postgres
+      - DB_DATABASE=keycloak
+      - DB_ADDR=keycloak-db
+      - DB_USER=keycloak
+      - DB_PASSWORD=myuberpassword
+# This is required to run keycloak behind traefik
+      - PROXY_ADDRESS_FORWARDING=true
+      - KEYCLOAK_HOSTNAME=keycloak.${DOMAINNAME}
+# Tell Postgress what user/password to create
+      - POSTGRES_USER=keycloak
+      - POSTGRES_PASSWORD=myuberpassword
+    networks:
+      keycloak:
+        aliases:
+          - keycloak-db
+    restart: always
+
+  keycloak-db-backup:
+    image: postgres
+    container_name: keycloak-db-backup
+    volumes:
+      - ${USERDIR}/keycloak/database-dump:/dump
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - PGHOST=keycloak-db
+      - PGUSER=keycloak
+      - PGPASSWORD=myuberpassword
+      - BACKUP_NUM_KEEP=7
+      - BACKUP_FREQUENCY=1d
+    entrypoint: |
+      bash -c 'bash -s <<EOF
+      trap "break;exit" SIGHUP SIGINT SIGTERM
+      sleep 2m
+      while /bin/true; do
+        pg_dump -Fc > /dump/dump_\`date +%d-%m-%Y"_"%H_%M_%S\`.psql
+        (ls -t /dump/dump*.psql|head -n $$BACKUP_NUM_KEEP;ls /dump/dump*.psql)|sort|uniq -u|xargs rm -- {} 
+        sleep $$BACKUP_FREQUENCY
+      done
+      EOF'
+    networks:
+      keycloak:
+        aliases:
+          - keycloak-db-backup
+    restart: always
+
+networks:
+  traefik:
+    driver: overlay
+      name: traefik
+  keycloak:
+    driver: overlay
+      name: keycloak
+  dockersocketcontainers:
+    driver: overlay
+      name: dockersocketcontainers
