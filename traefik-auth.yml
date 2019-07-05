@@ -1,0 +1,34 @@
+---
+version: "3.7"
+services:
+  traefik-forward-auth:
+#    image: thomseddon/traefik-forward-auth
+    image: funkypenguin/traefik-forward-auth
+    container_name: traefik-forward-auth
+    networks:
+      traefik:
+        aliases:
+          - traefik-forward-auth
+    environment:
+      PUID: 1000
+      PGID: 1000
+      CLIENT_ID: ${AUTHCLIENTID}
+      CLIENT_SECRET: ${AUTHCLIENTSECRET}
+      OIDC_ISSUER: https://keycloak.${DOMAINNAME}/auth/realms/master
+      SECRET: "THISISASECRET"
+      AUTH_HOST: auth.${DOMAINNAME}
+      COOKIE_DOMAINS: ${DOMAINNAME}
+#      WHITELIST: ${EMAIL}
+      COOKIE_SECURE: "true"
+      LIFETIME: "2592000" 
+    labels:
+      traefik.enable: "true"
+      traefik.port: 4181
+      traefik.frontend.rule: Host:auth.${DOMAINNAME}
+      traefik.frontend.auth.forward.address: http://traefik-forward-auth:4181
+      traefik.frontend.auth.forward.trustForwardHeader: "true"
+      traefik.backend: traefik-forward-auth
+
+networks:
+  traefik:
+    name: traefik
