@@ -2,7 +2,6 @@
 # https://www.keycloak.org/docs/latest/getting_started/index.html
 # https://hub.docker.com/_/postgres
 # https://hub.docker.com/r/jboss/keycloak/
-# https://github.com/keycloak/keycloak-quickstarts
 ---
 version: "3.7"
 services:
@@ -15,7 +14,7 @@ services:
       keycloak:
         aliases:
           - keycloak
-      traefik:
+      plexguide:
     volumes:
       - ${USERDIR}/keycloak/config:/config
       - ${USERDIR}/keycloak/config.json:/config.json
@@ -43,9 +42,9 @@ services:
       - traefik.backend=keycloak
       - traefik.frontend.rule=Host:keycloak.${DOMAINNAME}
       - traefik.port=8080
+    restart: always
 
   keycloak-db:
-#    env_file: /var/data/config/keycloak/keycloak.env
     image: postgres
     container_name: keycloak-db
     volumes:
@@ -67,13 +66,13 @@ services:
       keycloak:
         aliases:
           - keycloak-db
+    restart: always
 
   keycloak-db-backup:
     image: postgres
-#    env_file: /var/data/config/keycloak/keycloak-backup.env
     container_name: keycloak-db-backup
     volumes:
-      - /var/data/keycloak/database-dump:/dump
+      - ${USERDIR}/keycloak/database-dump:/dump
       - /etc/localtime:/etc/localtime:ro
     environment:
       - PGHOST=keycloak-db
@@ -95,7 +94,8 @@ services:
       keycloak:
         aliases:
           - keycloak-db-backup
-          
+    restart: always
+
 networks:
   keycloak:
     name: keycloak
