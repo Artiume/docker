@@ -34,13 +34,14 @@ services:
 #Let's Encrypt's staging server,
 #caServer = "https://acme-staging-v02.api.letsencrypt.org/directory"
       - "--docker"
-      - "--docker.swarmMode"
+      - "--docker.endpoint=tcp://proxy-containers:2375"
+#      - "--docker.swarmMode"
       - "--docker.domain=${DOMAINNAME}"
       - "--docker.watch"
       - "--docker.exposedbydefault=false"
-      #- "--consul"
-      #- "--consul.endpoint=consul:8500"
-      #- "--consul.prefix=traefik"
+#      - "--consul"
+#      - "--consul.endpoint=consul:8500"
+#      - "--consul.prefix=traefik"
       - "--retry"
       - "--file"
       - "resolvers=[192,168.1.1:53,1.1.1.1:53,]"
@@ -104,11 +105,11 @@ services:
     ports:
       - "127.0.0.1:2375:2375"
     networks:
-      dockersocketcontainers:
+      proxy-dockersocket:
         aliases:
-          - dockersocketcontainers
-    env:
-    
+          - proxy-containers
+    environment:
+      CONTAINERS: 1
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - /etc/localtime:/etc/localtime:ro
@@ -146,7 +147,6 @@ services:
 
 # https://www.keycloak.org/documentation.html
 # https://www.keycloak.org/docs/latest/getting_started/index.html
-# https://hub.docker.com/_/postgres
 # https://hub.docker.com/r/jboss/keycloak/
   keycloak:
     image: jboss/keycloak
@@ -159,8 +159,7 @@ services:
           - keycloak
       traefik:
     volumes:
-      - ${USERDIR}/keycloak/config:/config
-      - ${USERDIR}/keycloak/config.json:/config.json
+#      - ${USERDIR}/keycloak/config.json:/config.json
       - /etc/localtime:/etc/localtime:ro
     environment:
 #      - PUID=1000
@@ -186,7 +185,10 @@ services:
       - traefik.frontend.rule=Host:keycloak.${DOMAINNAME}
       - traefik.port=8080
     restart: always
+    depends_on:
+      - keycloak-db
 
+# https://hub.docker.com/_/postgres
   keycloak-db:
     image: postgres
     container_name: keycloak-db
@@ -238,6 +240,8 @@ services:
         aliases:
           - keycloak-db-backup
     restart: always
+    depends_on:
+      - keycloak-db
 
 networks:
   traefik:
@@ -246,6 +250,6 @@ networks:
   keycloak:
     driver: overlay
       name: keycloak
-  dockersocketcontainers:
+  proxy-dockersocket:
     driver: overlay
-      name: dockersocketcontainers
+      name: proxy-dockersocket
