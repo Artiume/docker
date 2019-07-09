@@ -12,9 +12,7 @@ services:
       - "8080:8080"
     networks:
       keycloak:
-        aliases:
-          - keycloak
-      plexguide:
+      traefik:
     volumes:
       - ${USERDIR}/keycloak/config:/config
       - ${USERDIR}/keycloak/config.json:/config.json
@@ -47,6 +45,8 @@ services:
   keycloak-db:
     image: postgres
     container_name: keycloak-db
+    networks:
+      keycloak:
     volumes:
       - ${USERDIR}/keycloak/database:/var/lib/postgresql/data
       - /etc/localtime:/etc/localtime:ro    
@@ -62,10 +62,6 @@ services:
 # Tell Postgress what user/password to create
       - POSTGRES_USER=keycloak
       - POSTGRES_PASSWORD=myuberpassword
-    networks:
-      keycloak:
-        aliases:
-          - keycloak-db
     restart: always
 
   keycloak-db-backup:
@@ -92,8 +88,6 @@ services:
       EOF'
     networks:
       keycloak:
-        aliases:
-          - keycloak-db-backup
     restart: always
 
 networks:
