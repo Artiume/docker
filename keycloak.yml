@@ -8,14 +8,14 @@ services:
   keycloak:
     image: jboss/keycloak
     container_name: keycloak
+    domainname: ${DOMAINNAME}
     ports:
       - "8080:8080"
     networks:
       keycloak:
       traefik:
     volumes:
-      - ${USERDIR}/keycloak/config:/config
-      - ${USERDIR}/keycloak/config.json:/config.json
+#      - ${USERDIR}/keycloak/config.json:/config.json
       - /etc/localtime:/etc/localtime:ro
     environment:
 #      - PUID=1000
@@ -35,12 +35,14 @@ services:
       - POSTGRES_USER=keycloak
       - POSTGRES_PASSWORD=myuberpassword
     labels:
-      - traefik.enable=true
-      - traefik.docker.network=traefik
-      - traefik.backend=keycloak
-      - traefik.frontend.rule=Host:keycloak.${DOMAINNAME}
-      - traefik.port=8080
+      traefik.enable: "true"
+      traefik.docker.network: traefik
+      traefik.backend: keycloak
+      traefik.frontend.rule: Host:keycloak.${DOMAINNAME}
+      traefik.port: 8080
     restart: always
+    depends_on:
+      - keycloak-db
 
   keycloak-db:
     image: postgres
@@ -67,6 +69,8 @@ services:
   keycloak-db-backup:
     image: postgres
     container_name: keycloak-db-backup
+    networks:
+      keycloak:
     volumes:
       - ${USERDIR}/keycloak/database-dump:/dump
       - /etc/localtime:/etc/localtime:ro
@@ -86,8 +90,6 @@ services:
         sleep $$BACKUP_FREQUENCY
       done
       EOF'
-    networks:
-      keycloak:
     restart: always
 
 networks:
