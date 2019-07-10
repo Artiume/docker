@@ -1,11 +1,16 @@
 version: '3.7'
 
+networks:
+  traefik:
+    name: traefik
+  keycloak:
+    name: keycloak
+
 services:
   traefik:
     image: traefik:latest
     container_name: traefik
     command: 
-#      - "storeconfig" #This is the push to consul, secondary traefik must be created and interfaced to this traefik. Remove this traefik's open ports, it shuts down once consul is messaged.
 #      - "--accesslog"
 #      - "--accesslog.filepath=/traefik.log"
       - "--logLevel=WARN"
@@ -19,6 +24,7 @@ services:
       - "--entrypoints=Name:apiport Address::8080"
 #      - "--entrypoints=Name:pingport Address::8081"
       - "--acme"
+#      - "--acme.acmelogging" 
       - "--acme.storage=/etc/traefik/acme/acme.json"
       - "--acme.entryPoint=https"
 #      - "--acme.TLS-ALPN-01"
@@ -31,19 +37,15 @@ services:
       - "--acme.acmeLogging=true"
       - "--acme.domains=${DOMAINNAME},*.${DOMAINNAME},"
       - "--acme.KeyType=RSA4096"
-#Let's Encrypt's staging server,
-#caServer = "https://acme-staging-v02.api.letsencrypt.org/directory"
+# Let's Encrypt's staging server
+#     - "--acme.caServer=https://acme-staging-v02.api.letsencrypt.org/directory"
       - "--docker"
-      - "--docker.endpoint=tcp://proxy-containers:2375"
 #      - "--docker.swarmMode"
       - "--docker.domain=${DOMAINNAME}"
       - "--docker.watch"
       - "--docker.exposedbydefault=false"
-#      - "--consul"
-#      - "--consul.endpoint=consul:8500"
-#      - "--consul.prefix=traefik"
       - "--retry"
-      - "--file"
+#      - "--file"
       - "resolvers=[192,168.1.1:53,1.1.1.1:53,]"
     environment:
       TZ: ${TZ}
@@ -64,13 +66,7 @@ services:
       - ${USERDIR}/traefik/traefik.log:/traefik.log
       - ${USERDIR}/traefik/file.toml:/file.toml
     networks:
-      traefik:
-        aliases:
-          - traefik
-      dockersocketcontainers:
-        aliases:
-          - traefik
-    restart: always
+      - traefik
     labels:
       traefik.enable: "true"
       traefik.docker.network: traefik
@@ -78,12 +74,14 @@ services:
       traefik.protocol: http
       traefik.port: 8080
       traefik.frontend.rule: Host:traefik.${DOMAINNAME},
-      traefik.frontend.entryPoint: http
-      traefik.frontend.redirect.entryPoint: https
-      traefik.frontend.priority: 1
+      traefik.frontend.auth.forward.address: http://traefik-forward-auth:4181
+      traefik.frontend.auth.forward.authResponseHeaders: X-Forwarded-User
+      traefik.frontend.auth.forward.trustForwardHeader: "true"
+# These are not necessarily required, however recommended. Do not trust auth to be your only means of defense.
+# https://www.acunetix.com/blog/articles/a-fresh-look-on-reverse-proxy-related-attacks/
       traefik.frontend.passHostHeader: "true"
       traefik.frontend.headers.SSLForceHost: "true"
-      traefik.frontend.headers.SSLHost: traefik.${DOMAINNAME}
+      traefik.frontend.headers.SSLHost: traefik-sso.${DOMAINNAME}, ${DOMAINNAME}
       traefik.frontend.headers.SSLRedirect: "true"
       traefik.frontend.headers.browserXSSFilter: "true"
       traefik.frontend.headers.contentTypeNosniff: "true"
@@ -94,45 +92,28 @@ services:
       traefik.frontend.headers.customResponseHeaders: X-Robots-Tag:noindex,nofollow,nosnippet,noarchive,notranslate,noimageindex
       traefik.frontend.headers.frameDeny: "true"
       traefik.frontend.headers.customFrameOptionsValue: 'allow-from https:${DOMAINNAME}'
-      traefik.frontend.auth.forward.address: http://oauth:4181
-
-# Places a security level proxy on docker socket
-  docker-socket-proxy:
-    image: tecnativa/docker-socket-proxy
-    container_name: docker-socket-proxy
-    command:
-      - "--priviledged"
-    ports:
-      - "127.0.0.1:2375:2375"
-    networks:
-      proxy-dockersocket:
-        aliases:
-          - proxy-containers
-    environment:
-      CONTAINERS: 1
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /etc/localtime:/etc/localtime:ro
     restart: always
+    depends_on:
+      - traefik-forward-auth
 
 # The auth gate for SSO
+# https://geek-cookbook.funkypenguin.co.nz/ha-docker-swarm/traefik-forward-auth/
   traefik-forward-auth:
+# thomseddeon's image doesnt support OIDC_ISSUER yet
 #    image: thomseddon/traefik-forward-auth
     image: funkypenguin/traefik-forward-auth
     container_name: traefik-forward-auth
     networks:
       traefik:
-        aliases:
-          - traefik-forward-auth
     environment:
-      PUID: 1000
-      PGID: 1000
       CLIENT_ID: ${AUTHCLIENTID}
       CLIENT_SECRET: ${AUTHCLIENTSECRET}
+# This is based on using the Master realm. Create a new client, this will go into your CLIENT_ID, CLIENT_SECRET details.
       OIDC_ISSUER: https://keycloak.${DOMAINNAME}/auth/realms/master
-      SECRET: "THISISASECRET"
+      SECRET: THISISASECRET
       AUTH_HOST: auth.${DOMAINNAME}
       COOKIE_DOMAINS: ${DOMAINNAME}
+# https://github.com/thomseddon/traefik-forward-auth#user-restriction
 #      WHITELIST: ${EMAIL}
       COOKIE_SECURE: "true"
       LIFETIME: "2592000" 
@@ -140,33 +121,38 @@ services:
     labels:
       traefik.enable: "true"
       traefik.port: 4181
-      traefik.frontend.rule: Host:auth.${DOMAINNAME}
+      traefik.frontend.rule: Host:auth.${DOMAINNAME},
+      traefik.backend: traefik-forward-auth
+      traefik.docker.network: traefik
       traefik.frontend.auth.forward.address: http://traefik-forward-auth:4181
       traefik.frontend.auth.forward.trustForwardHeader: "true"
-      traefik.backend: traefik-forward-auth
+      traefik.frontend.auth.forward.authResponseHeaders: X-Forwarded-User
+    depends_on:
+      - keycloak
 
 # https://www.keycloak.org/documentation.html
 # https://www.keycloak.org/docs/latest/getting_started/index.html
 # https://hub.docker.com/r/jboss/keycloak/
+# https://geek-cookbook.funkypenguin.co.nz/recipes/keycloak/
   keycloak:
     image: jboss/keycloak
     container_name: keycloak
-    ports:
-      - "8080:8080"
+    domainname: ${DOMAINNAME}
+#    ports:
+#      - "8080:8080"
     networks:
       keycloak:
-        aliases:
-          - keycloak
       traefik:
     volumes:
 #      - ${USERDIR}/keycloak/config.json:/config.json
       - /etc/localtime:/etc/localtime:ro
     environment:
-#      - PUID=1000
-#      - PGID=1000
+      - PUID=1000
+      - PGID=1000
+# https://geek-cookbook.funkypenguin.co.nz/recipes/keycloak/setup-oidc-provider/
       - KEYCLOAK_USER=${KEYCLOAKUSER}
       - KEYCLOAK_PASSWORD=${KEYCLOAKPASS}
- #     - KEYCLOAK_IMPORT=/config.json
+#      - KEYCLOAK_IMPORT=/config.json
       - DB_VENDOR=postgres
       - DB_DATABASE=keycloak
       - DB_ADDR=keycloak-db
@@ -179,11 +165,12 @@ services:
       - POSTGRES_USER=keycloak
       - POSTGRES_PASSWORD=myuberpassword
     labels:
-      - traefik.enable=true
-      - traefik.docker.network=traefik
-      - traefik.backend=keycloak
-      - traefik.frontend.rule=Host:keycloak.${DOMAINNAME}
-      - traefik.port=8080
+      traefik.enable: "true"
+      traefik.docker.network: traefik
+      traefik.backend: keycloak
+      traefik.frontend.rule: Host:keycloak.${DOMAINNAME}
+      traefik.port: 8080
+# I tried placing keycloak behind the auth wall and using the internal DNS for the OIDC_ISSUER, it had issues so I removed it. 
     restart: always
     depends_on:
       - keycloak-db
@@ -192,6 +179,8 @@ services:
   keycloak-db:
     image: postgres
     container_name: keycloak-db
+    networks:
+      keycloak:
     volumes:
       - ${USERDIR}/keycloak/database:/var/lib/postgresql/data
       - /etc/localtime:/etc/localtime:ro    
@@ -207,15 +196,13 @@ services:
 # Tell Postgress what user/password to create
       - POSTGRES_USER=keycloak
       - POSTGRES_PASSWORD=myuberpassword
-    networks:
-      keycloak:
-        aliases:
-          - keycloak-db
     restart: always
 
   keycloak-db-backup:
     image: postgres
     container_name: keycloak-db-backup
+    networks:
+      keycloak:
     volumes:
       - ${USERDIR}/keycloak/database-dump:/dump
       - /etc/localtime:/etc/localtime:ro
@@ -235,21 +222,21 @@ services:
         sleep $$BACKUP_FREQUENCY
       done
       EOF'
-    networks:
-      keycloak:
-        aliases:
-          - keycloak-db-backup
     restart: always
     depends_on:
       - keycloak-db
 
-networks:
-  traefik:
-    driver: overlay
-      name: traefik
-  keycloak:
-    driver: overlay
-      name: keycloak
-  proxy-dockersocket:
-    driver: overlay
-      name: proxy-dockersocket
+#  foo:
+#    image: bar
+#    container_name: foo
+#    networks:
+#      traefik:
+#    labels:
+#      traefik.enable: "true"
+#      traefik.backend: foo
+#      traefik.frontend.rule: Host:foo.${DOMAINNAME},
+#      traefik.port: 80
+# Labels needed to use auth on a container
+#      traefik.frontend.auth.forward.address: http://traefik-forward-auth:4181
+#      traefik.frontend.auth.forward.authResponseHeaders: X-Forwarded-User
+#      traefik.frontend.auth.forward.trustForwardHeader: "true"
