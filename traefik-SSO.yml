@@ -93,8 +93,6 @@ services:
       traefik.frontend.headers.frameDeny: "true"
       traefik.frontend.headers.customFrameOptionsValue: 'allow-from https:${DOMAINNAME}'
     restart: always
-    depends_on:
-      - traefik-forward-auth
 
 # The auth gate for SSO
 # https://geek-cookbook.funkypenguin.co.nz/ha-docker-swarm/traefik-forward-auth/
@@ -129,6 +127,7 @@ services:
       traefik.frontend.auth.forward.authResponseHeaders: X-Forwarded-User
     depends_on:
       - keycloak
+      - traefik
 
 # https://www.keycloak.org/documentation.html
 # https://www.keycloak.org/docs/latest/getting_started/index.html
