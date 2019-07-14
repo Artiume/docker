@@ -1,0 +1,54 @@
+# https://hub.docker.com/r/jlesage/firefox/
+---
+version: "3.7"
+services:
+  firefox:
+    image: jlesage/firefox
+    container_name: firefox
+    environment:
+      - USER_ID=1000
+      - GROUP_ID=1000
+      - TZ=${TZ}
+      - KEEP_APP_RUNNING=1
+      - CLEAN_TMP_DIR=1
+      - DISPLAY_WIDTH=1600
+      - DISPLAY_HEIGHT=960
+#    network_mode: service:vpn-proxy
+#    build:
+#      network: host
+    networks:
+      - traefik
+    dns:
+      - 192.168.1.1
+    volumes:
+      - ${USERDIR}/firefox:/config
+      - /dev/shm:/dev/shm
+ #   ports:
+ #     - "5800:5800"
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: traefik
+      traefik.backend: firefox
+      traefik.protocol: http
+      traefik.port: 5800
+      traefik.frontend.rule: Host:firefox.${DOMAINNAME},
+      traefik.frontend.auth.forward.address: http://traefik-forward-auth:4181
+      traefik.frontend.auth.forward.authResponseHeaders: X-Forwarded-User
+      traefik.frontend.auth.forward.trustForwardHeader: "true"
+    restart: always
+
+  whoami:
+    image: containous/whoami
+    container_name: whoami
+    networks:
+      plexguide:
+#    labels:
+#      traefik.enable: "true"
+#      traefik.backend: whoami
+#      traefik.port: 80
+
+networks:
+  traefik:
+    name: traefik
+  plexguide:
+    name: plexguide
