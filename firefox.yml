@@ -37,18 +37,6 @@ services:
       traefik.frontend.auth.forward.trustForwardHeader: "true"
     restart: always
 
-  whoami:
-    image: containous/whoami
-    container_name: whoami
-    networks:
-      plexguide:
-#    labels:
-#      traefik.enable: "true"
-#      traefik.backend: whoami
-#      traefik.port: 80
-
 networks:
   traefik:
     name: traefik
-  plexguide:
-    name: plexguide
