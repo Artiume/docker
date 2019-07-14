@@ -24,14 +24,14 @@ services:
       - "9443:9443"
       - "8118:8118"
     networks:
-      - vpn-rutorrent
+      traefik:
     volumes:
       - ${USERDIR}/vpn-rutorrent/data:/data
       - ${USERDIR}/vpn-rutorrent/config:/config
       - /etc/localtime:/etc/localtime:ro
     environment:
-      - PUID=1000 #Might need to be 0, run id inside container
-      - PGID=1000 #Might need to be 0
+      - PUID=1000
+      - PGID=1000
       - PHP_TZ=${TZ}
       - VPN_ENABLED=yes
       - VPN_USER=${VPNUSER}
@@ -50,5 +50,5 @@ services:
       - UMASK=000
 
 networks:
-  vpn-rutorrent:
-    name: vpn-rutorrent
+  traefik:
+    name: traefik
