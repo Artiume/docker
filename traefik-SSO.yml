@@ -119,7 +119,7 @@ services:
     labels:
       traefik.enable: "true"
       traefik.port: 4181
-      traefik.frontend.rule: Host:auth.${DOMAINNAME},
+      traefik.frontend.rule: Host:traefik-forward-auth.${DOMAINNAME},
       traefik.backend: traefik-forward-auth
       traefik.docker.network: traefik
       traefik.frontend.auth.forward.address: http://traefik-forward-auth:4181
