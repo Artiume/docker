@@ -81,7 +81,7 @@ services:
 # https://www.acunetix.com/blog/articles/a-fresh-look-on-reverse-proxy-related-attacks/
       traefik.frontend.passHostHeader: "true"
       traefik.frontend.headers.SSLForceHost: "true"
-      traefik.frontend.headers.SSLHost: traefik-sso.${DOMAINNAME}, ${DOMAINNAME}
+      traefik.frontend.headers.SSLHost: traefik.${DOMAINNAME}
       traefik.frontend.headers.SSLRedirect: "true"
       traefik.frontend.headers.browserXSSFilter: "true"
       traefik.frontend.headers.contentTypeNosniff: "true"
