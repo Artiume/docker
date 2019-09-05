@@ -63,8 +63,8 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ${USERDIR}/traefik/acme.json:/etc/traefik/acme/acme.json
-      - ${USERDIR}/traefik/traefik.log:/traefik.log
-      - ${USERDIR}/traefik/file.toml:/file.toml
+#      - ${USERDIR}/traefik/traefik.log:/traefik.log
+#      - ${USERDIR}/traefik/file.toml:/file.toml
     networks:
       - traefik
     labels:
