@@ -8,6 +8,7 @@ I have created a default toml-less traefik.yml which has full HSTS capabilities,
 Test your website here!
 <br> https://www.ssllabs.com/ssltest/
 <br> https://www.grc.com/dns/dns.htm
+<br> https://securityheaders.com/
 
 Here's some good information to learn about 
 <br> https://github.com/ssllabs/research/wiki/SSL-and-TLS-Deployment-Best-Practices#25-use-forward-secrecy 
