@@ -27,12 +27,12 @@ services:
       traefik.protocol: http
       traefik.port: 80
       traefik.frontend.rule: Host:${DOMAINNAME}, www.${DOMAINNAME},
-      traefik.frontend.auth.forward.address: http://traefik-forward-auth:4181
-      traefik.frontend.auth.forward.authResponseHeaders: X-Forwarded-User
-      traefik.frontend.auth.forward.trustForwardHeader: "true"
+#      traefik.frontend.auth.forward.address: http://traefik-forward-auth:4181
+#      traefik.frontend.auth.forward.authResponseHeaders: X-Forwarded-User
+#      traefik.frontend.auth.forward.trustForwardHeader: "true"
       traefik.frontend.passHostHeader: "true"
       traefik.frontend.headers.SSLForceHost: "true"
-      traefik.frontend.headers.SSLHost: organizr.${DOMAINNAME}
+      traefik.frontend.headers.SSLHost: ${DOMAINNAME}
       traefik.frontend.headers.SSLRedirect: "true"
       traefik.frontend.headers.browserXSSFilter: "true"
       traefik.frontend.headers.contentTypeNosniff: "true"
