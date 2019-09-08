@@ -1,0 +1,23 @@
+# Docker Garbage Collector
+version: '3.7'
+
+services:
+  dockergc: 
+    image: clockworksoul/docker-gc-cron:latest
+    container_name: docker-gc
+    dns:
+      - 192.168.1.1
+      - 1.1.1.1
+    volumes: 
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${USERDIR}/docker-gc:/etc/docker-gc-exclude
+    environment: 
+      CRON: 0 9,21 * * *
+      FORCE_IMAGE_REMOVAL: 1
+      FORCE_CONTAINER_REMOVAL: 1
+      MINIMUM_IMAGES_TO_SAVE: 1
+      GRACE_PERIOD_SECONDS: 3600
+      DRY_RUN: 0
+      CLEAN_UP_VOLUMES: 1
+      TZ: ${TZ}
+    restart: always
