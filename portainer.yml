@@ -25,13 +25,13 @@ services:
       traefik.backend: portainer
       traefik.protocol: http
       traefik.port: 9000
-      traefik.frontend.rule: Host:portainer.${DOMAINNAME},
+      traefik.frontend.rule: Host:portainer.${DOMAINNAME}
       traefik.frontend.auth.forward.address: http://traefik-forward-auth:4181
       traefik.frontend.auth.forward.authResponseHeaders: X-Forwarded-User
       traefik.frontend.auth.forward.trustForwardHeader: "true"
       traefik.frontend.passHostHeader: "true"
       traefik.frontend.headers.SSLForceHost: "true"
-      traefik.frontend.headers.SSLHost: portainer.${DOMAINNAME},
+      traefik.frontend.headers.SSLHost: portainer.${DOMAINNAME}
       traefik.frontend.headers.SSLRedirect: "true"
       traefik.frontend.headers.browserXSSFilter: "true"
       traefik.frontend.headers.contentTypeNosniff: "true"
