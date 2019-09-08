@@ -18,11 +18,8 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - ${USERDIR}/portainer:/data
     networks:
-      - traefik
-    deploy:
-      mode: replicated
-      replicas: 1
-      labels:
+      traefik:
+    labels:
       traefik.enable: "true"
       traefik.docker.network: traefik
       traefik.backend: portainer
