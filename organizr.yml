@@ -1,0 +1,46 @@
+version: '3.7'
+
+networks:
+  traefik:
+    name: traefik
+
+services:
+  organizr:
+    image: linuxserver/organizr
+    container_name: organizr
+    networks:
+      - traefik
+#    ports:
+#     - target: 80
+#       published: 30005
+    environment:
+      PUID: 1000
+      PGID: 1000
+      HOME: /config
+      TZ: ${TZ}
+    volumes:
+      - /data/brick/organizr:/config
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: traefik
+      traefik.backend: organizr
+      traefik.protocol: http
+      traefik.port: 80
+      traefik.frontend.rule: Host:${DOMAINNAME}, www.${DOMAINNAME},
+      traefik.frontend.auth.forward.address: http://traefik-forward-auth:4181
+      traefik.frontend.auth.forward.authResponseHeaders: X-Forwarded-User
+      traefik.frontend.auth.forward.trustForwardHeader: "true"
+      traefik.frontend.passHostHeader: "true"
+      traefik.frontend.headers.SSLForceHost: "true"
+      traefik.frontend.headers.SSLHost: organizr.${DOMAINNAME}
+      traefik.frontend.headers.SSLRedirect: "true"
+      traefik.frontend.headers.browserXSSFilter: "true"
+      traefik.frontend.headers.contentTypeNosniff: "true"
+      traefik.frontend.headers.forceSTSHeader: "true"
+      traefik.frontend.headers.STSSeconds: 315360000
+      traefik.frontend.headers.STSIncludeSubdomains: "true"
+      traefik.frontend.headers.STSPreload: "true"
+      traefik.frontend.headers.customResponseHeaders: X-Robots-Tag:noindex,nofollow,nosnippet,noarchive,notranslate,noimageindex
+      traefik.frontend.headers.frameDeny: "true"
+      traefik.frontend.headers.customFrameOptionsValue: 'allow-from https:${DOMAINNAME}'
+    restart: always
