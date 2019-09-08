@@ -1,0 +1,52 @@
+version: "3.7"
+
+networks:
+  traefik:
+    name: traefik
+
+services:
+  sabnzbd:
+    image: linuxserver/sabnzbd
+    container_name: sabnzbd
+    hostname: sabnzbd.${DOMAINNAME}
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+      HOME: /config
+      TZ: ${TZ}
+#    ports:
+#      - "8080:8080/tcp"
+#      - "9090:9090/tcp"
+    volumes:
+      - ${USERDIR}/sabnzbd/config:/config
+      - ${USERDIR}/sabnzbd/complete:/complete
+      - ${USERDIR}/sabnzbd/incomplete:/incomplete
+      - ${USERDIR}/sabnzbd/nzb:/nzb
+    networks:
+      traefik:
+    dns: 
+      - 192.168.1.1
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: traefik
+      traefik.backend: sabnzbd
+      traefik.protocol: http
+      traefik.port: 8080
+      traefik.frontend.rule: Host:sabnzbd.${DOMAINNAME},
+      traefik.frontend.auth.forward.address: http://traefik-forward-auth:4181
+      traefik.frontend.auth.forward.authResponseHeaders: X-Forwarded-User
+      traefik.frontend.auth.forward.trustForwardHeader: "true"
+      traefik.frontend.passHostHeader: "true"
+      traefik.frontend.headers.SSLForceHost: "true"
+      traefik.frontend.headers.SSLHost: sabnzbd.${DOMAINNAME}
+      traefik.frontend.headers.SSLRedirect: "true"
+      traefik.frontend.headers.browserXSSFilter: "true"
+      traefik.frontend.headers.contentTypeNosniff: "true"
+      traefik.frontend.headers.forceSTSHeader: "true"
+      traefik.frontend.headers.STSSeconds: 315360000
+      traefik.frontend.headers.STSIncludeSubdomains: "true"
+      traefik.frontend.headers.STSPreload: "true"
+      traefik.frontend.headers.customResponseHeaders: X-Robots-Tag:noindex,nofollow,nosnippet,noarchive,notranslate,noimageindex
+      traefik.frontend.headers.frameDeny: "true"
+      traefik.frontend.headers.customFrameOptionsValue: 'allow-from https:${DOMAINNAME}'
+    restart: always
