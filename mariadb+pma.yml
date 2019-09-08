@@ -1,4 +1,3 @@
-# phpMyAdmin - WebUI for MariaDB
 version: "3.7"
 
 networks:
@@ -25,21 +24,25 @@ services:
         protocol: tcp
         mode: host
     environment:
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-      - PUID=${PUID}
-      - PGID=${PGID}
-      - TZ=${TZ}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
     restart: always
 
-  phpmyadmin:
+# phpMyAdmin - WebUI for MariaDB
+  pma:
     image: phpmyadmin/phpmyadmin
-    container_name: phpmyadmin
-    hostname: phpmyadmin
+    container_name: pma
+    hostname: pma
     networks:
       traefik:
       mariadb:
-    links:
-      - mariadb:db
+#    links:
+#      - mariadb:db
 #    ports:
 #     - target: 80
 #       published: 10000
@@ -47,6 +50,9 @@ services:
       TZ: ${TZ}
       PMA_HOST: mariadb
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     labels:
       traefik.enable: "true"
       traefik.docker.network: traefik
