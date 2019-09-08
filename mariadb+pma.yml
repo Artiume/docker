@@ -1,0 +1,73 @@
+# phpMyAdmin - WebUI for MariaDB
+version: "3.7"
+
+networks:
+  traefik:
+    name: traefik
+  mariadb:
+    name: mariadb
+
+services:
+# MariaDB – Database Server for your Apps
+  mariadb:
+    image: linuxserver/mariadb
+    container_name: mariadb
+    hostname: mariadb
+    networks:
+      mariadb:
+    volumes:
+        - ${USERDIR}/mariadb:/config
+        - ${USERDIR}/guacamole/init:/docker-entrypoint-initdb.d:ro #check if needed
+        - ${USERDIR}/guacamole/data:/var/lib/mysql/data:rw #check if needed
+    ports:
+      - target: 3306
+        published: 3306
+        protocol: tcp
+        mode: host
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    restart: always
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    hostname: phpmyadmin
+    networks:
+      traefik:
+      mariadb:
+    links:
+      - mariadb:db
+#    ports:
+#     - target: 80
+#       published: 10000
+    environment:
+      TZ: ${TZ}
+      PMA_HOST: mariadb
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: traefik
+      traefik.backend: pma
+      traefik.protocol: http
+      traefik.port: 80
+      traefik.frontend.rule: Host:pma.${DOMAINNAME}
+      traefik.frontend.auth.forward.address: http://traefik-forward-auth:4181
+      traefik.frontend.auth.forward.authResponseHeaders: X-Forwarded-User
+      traefik.frontend.auth.forward.trustForwardHeader: "true"
+      traefik.frontend.passHostHeader: "true"
+      traefik.frontend.headers.SSLForceHost: "true"
+      traefik.frontend.headers.SSLHost: pma.${DOMAINNAME}
+      traefik.frontend.headers.SSLRedirect: "true"
+      traefik.frontend.headers.browserXSSFilter: "true"
+      traefik.frontend.headers.contentTypeNosniff: "true"
+      traefik.frontend.headers.forceSTSHeader: "true"
+      traefik.frontend.headers.STSSeconds: 315360000
+      traefik.frontend.headers.STSIncludeSubdomains: "true"
+      traefik.frontend.headers.STSPreload: "true"
+      traefik.frontend.headers.customResponseHeaders: X-Robots-Tag:noindex,nofollow,nosnippet,noarchive,notranslate,noimageindex
+      traefik.frontend.headers.frameDeny: "true"
+      traefik.frontend.headers.customFrameOptionsValue: 'allow-from https:${DOMAINNAME}'
+    restart: always
