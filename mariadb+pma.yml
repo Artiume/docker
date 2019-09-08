@@ -1,4 +1,3 @@
-# phpMyAdmin - WebUI for MariaDB
 version: "3.7"
 
 networks:
@@ -34,6 +33,7 @@ services:
       TZ: ${TZ}
     restart: always
 
+# phpMyAdmin - WebUI for MariaDB
   pma:
     image: phpmyadmin/phpmyadmin
     container_name: pma
