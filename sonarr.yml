@@ -1,0 +1,51 @@
+version: '3.7'
+
+networks:
+  traefik:
+    name: traefik
+
+services:
+  sonarr:
+    image: linuxserver/sonarr
+    container_name: sonarr
+    hostname: sonarr
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+      HOME: /config
+      TZ: ${TZ}
+      UMASK_SET: 022
+#    ports:
+#      - "7878:7878/tcp"
+    volumes:
+      - ${USERDIR}/sonarr:/config
+      - ${USERDIR}/sabnzbd/complete:/complete
+      - /media:/media
+    networks:
+      traefik:
+    dns:
+      - 192.168.1.1
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: traefik
+      traefik.backend: sonarr
+      traefik.protocol: http
+      traefik.port: 8989
+      traefik.frontend.rule: Host:sonarr.${DOMAINNAME}
+      traefik.frontend.auth.forward.address: http://traefik-forward-auth:4181
+      traefik.frontend.auth.forward.authResponseHeaders: X-Forwarded-User
+      traefik.frontend.auth.forward.trustForwardHeader: "true"
+      traefik.frontend.passHostHeader: "true"
+      traefik.frontend.headers.SSLForceHost: "true"
+      traefik.frontend.headers.SSLHost: sonarr.${DOMAINNAME}
+      traefik.frontend.headers.SSLRedirect: "true"
+      traefik.frontend.headers.browserXSSFilter: "true"
+      traefik.frontend.headers.contentTypeNosniff: "true"
+      traefik.frontend.headers.forceSTSHeader: "true"
+      traefik.frontend.headers.STSSeconds: 315360000
+      traefik.frontend.headers.STSIncludeSubdomains: "true"
+      traefik.frontend.headers.STSPreload: "true"
+      traefik.frontend.headers.customResponseHeaders: X-Robots-Tag:noindex,nofollow,nosnippet,noarchive,notranslate,noimageindex
+      traefik.frontend.headers.frameDeny: "true"
+      traefik.frontend.headers.customFrameOptionsValue: 'allow-from https:${DOMAINNAME}'
+    restart: always
