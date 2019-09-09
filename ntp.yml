@@ -1,22 +1,22 @@
-
----
 version: "3.7"
+networks:
+  ntp:
+    name: ntp
+
 services:
   ntp:
     image: cturra/ntp
     container_name: ntp
+    networks:
+      - ntp
+    dns:
+      - 192.168.1.1
+    ports:
+      - "123:123/udp"
     commands:
       - "--detach=true"
     cap_add:
       - SYS_NICE
       - SYS_RESOURCE
       - SYS_TIME
-    ports:
-      - "123:123/udp"
-    networks:
-      - ntp
     restart: always
-
-networks:
-  ntp:
-    name: ntp
