@@ -1,3 +1,4 @@
+# https://github.com/mageddo/dns-proxy-server
 version: "3.7"
 
 services:
