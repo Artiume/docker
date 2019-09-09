@@ -2,44 +2,64 @@
 # https://www.keycloak.org/docs/latest/getting_started/index.html
 # https://hub.docker.com/_/postgres
 # https://hub.docker.com/r/jboss/keycloak/
----
 version: "3.7"
+networks:
+  keycloak:
+    name: keycloak
+  traefik:
+    name: traefik
+
 services:
   keycloak:
     image: jboss/keycloak
     container_name: keycloak
     domainname: ${DOMAINNAME}
-    ports:
-      - "8080:8080"
+#    ports:
+#      - "8080:8080"
     networks:
-      keycloak:
       traefik:
+      keycloak:
     volumes:
-#      - ${USERDIR}/keycloak/config.json:/config.json
       - /etc/localtime:/etc/localtime:ro
     environment:
-#      - PUID=1000
-#      - PGID=1000
-      - KEYCLOAK_USER=${KEYCLOAKUSER}
-      - KEYCLOAK_PASSWORD=${KEYCLOAKPASS}
- #     - KEYCLOAK_IMPORT=/config.json
-      - DB_VENDOR=postgres
-      - DB_DATABASE=keycloak
-      - DB_ADDR=keycloak-db
-      - DB_USER=keycloak
-      - DB_PASSWORD=myuberpassword
+      PUID=1000
+      PGID=1000
+      KEYCLOAK_USER: ${KEYCLOAKUSER}
+      KEYCLOAK_PASSWORD: ${KEYCLOAKPASS}
+      DB_VENDOR: postgres
+      DB_DATABASE: keycloak
+      DB_ADDR: keycloak-db
+      DB_USER: keycloak
+      DB_PASSWORD: myuberpassword
 # This is required to run keycloak behind traefik
-      - PROXY_ADDRESS_FORWARDING=true
-      - KEYCLOAK_HOSTNAME=keycloak.${DOMAINNAME}
+      PROXY_ADDRESS_FORWARDING: "true"
+      KEYCLOAK_HOSTNAME: keycloak.${DOMAINNAME}
 # Tell Postgress what user/password to create
-      - POSTGRES_USER=keycloak
-      - POSTGRES_PASSWORD=myuberpassword
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: myuberpassword
     labels:
       traefik.enable: "true"
       traefik.docker.network: traefik
       traefik.backend: keycloak
-      traefik.frontend.rule: Host:keycloak.${DOMAINNAME}
+      traefik.protocol: http
       traefik.port: 8080
+      traefik.frontend.rule: Host:keycloak.${DOMAINNAME},
+#      traefik.frontend.auth.forward.address: http://traefik-forward-auth:4181
+#      traefik.frontend.auth.forward.authResponseHeaders: X-Forwarded-User
+#      traefik.frontend.auth.forward.trustForwardHeader: "true"
+      traefik.frontend.passHostHeader: "true"
+      traefik.frontend.headers.SSLForceHost: "true"
+      traefik.frontend.headers.SSLHost: keycloak.${DOMAINNAME}
+      traefik.frontend.headers.SSLRedirect: "true"
+      traefik.frontend.headers.browserXSSFilter: "true"
+      traefik.frontend.headers.contentTypeNosniff: "true"
+      traefik.frontend.headers.forceSTSHeader: "true"
+      traefik.frontend.headers.STSSeconds: 315360000
+      traefik.frontend.headers.STSIncludeSubdomains: "true"
+      traefik.frontend.headers.STSPreload: "true"
+      traefik.frontend.headers.customResponseHeaders: X-Robots-Tag:noindex,nofollow,nosnippet,noarchive,notranslate,noimageindex
+      traefik.frontend.headers.frameDeny: "true"
+      traefik.frontend.headers.customFrameOptionsValue: 'allow-from https://${DOMAINNAME}'
     restart: always
     depends_on:
       - keycloak-db
@@ -91,9 +111,3 @@ services:
       done
       EOF'
     restart: always
-
-networks:
-  keycloak:
-    name: keycloak
-  traefik:
-    name: traefik
