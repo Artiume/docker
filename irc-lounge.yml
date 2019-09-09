@@ -1,18 +1,23 @@
 # https://thelounge.chat/docs/guides/reverse-proxies
 # https://hub.docker.com/r/linuxserver/thelounge/
----
 version: "3.7"
+networks:
+  traefik:
+    name: traefik
+
 services:
   irc-lounge:
     image: linuxserver/thelounge
     container_name: irc-lounge
+    hostname: irc-lounge
     environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=${TZ}
-#    network_mode: service:vpn-proxy
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
     networks:
       - traefik
+    dns:
+      - 192.168.1.1
     volumes:
       - ${USERDIR}/irc-lounge:/config
  #   ports:
@@ -23,12 +28,21 @@ services:
       traefik.backend: irc-lounge
       traefik.protocol: http
       traefik.port: 9000
-      traefik.frontend.rule: Host:irc-lounge.${DOMAINNAME},
+      traefik.frontend.rule: Host:irc-lounge.${DOMAINNAME}
       traefik.frontend.auth.forward.address: http://traefik-forward-auth:4181
       traefik.frontend.auth.forward.authResponseHeaders: X-Forwarded-User
       traefik.frontend.auth.forward.trustForwardHeader: "true"
+      traefik.frontend.passHostHeader: "true"
+      traefik.frontend.headers.SSLForceHost: "true"
+      traefik.frontend.headers.SSLHost: irc-lounge.${DOMAINNAME}
+      traefik.frontend.headers.SSLRedirect: "true"
+      traefik.frontend.headers.browserXSSFilter: "true"
+      traefik.frontend.headers.contentTypeNosniff: "true"
+      traefik.frontend.headers.forceSTSHeader: "true"
+      traefik.frontend.headers.STSSeconds: 315360000
+      traefik.frontend.headers.STSIncludeSubdomains: "true"
+      traefik.frontend.headers.STSPreload: "true"
+      traefik.frontend.headers.customResponseHeaders: X-Robots-Tag:noindex,nofollow,nosnippet,noarchive,notranslate,noimageindex
+      traefik.frontend.headers.frameDeny: "true"
+      traefik.frontend.headers.customFrameOptionsValue: 'allow-from https:${DOMAINNAME}'
     restart: always
-
-networks:
-  traefik:
-    name: traefik
