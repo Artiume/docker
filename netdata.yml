@@ -14,7 +14,7 @@ services:
       - 192.168.1.1
  #   ports:
  #     - 19999:19999
-     cap_add:
+    cap_add:
       - SYS_PTRACE
     security_opt:
       - apparmor:unconfined
