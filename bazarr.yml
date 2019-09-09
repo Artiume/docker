@@ -1,0 +1,47 @@
+version: "3.7"
+networks:
+  traefik:
+    name: traefik
+
+services:
+  bazarr:
+    image: linuxserver/bazarr
+    container_name: bazarr
+    hostname: bazarr
+    networks:
+      traefik:
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
+      UMASK_SET: 022 #optional
+    volumes:
+      - ${USERDIR}/bazarr:/config
+      - ${USERDIR}/media/movies:/movies
+      - ${USERDIR}/media/tvshows:/tv
+#    ports:
+#      - 6767:6767
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: traefik
+      traefik.backend: bazarr
+      traefik.protocol: http
+      traefik.port: 6767
+      traefik.frontend.rule: Host:bazarr.${DOMAINNAME}
+      traefik.frontend.auth.forward.address: http://traefik-forward-auth:4181
+      traefik.frontend.auth.forward.authResponseHeaders: X-Forwarded-User
+      traefik.frontend.auth.forward.trustForwardHeader: "true"
+      traefik.frontend.passHostHeader: "true"
+      traefik.frontend.headers.SSLForceHost: "true"
+      traefik.frontend.headers.SSLHost: bazarr.${DOMAINNAME}
+      traefik.frontend.headers.SSLRedirect: "true"
+      traefik.frontend.headers.browserXSSFilter: "true"
+      traefik.frontend.headers.contentTypeNosniff: "true"
+      traefik.frontend.headers.forceSTSHeader: "true"
+      traefik.frontend.headers.STSSeconds: 315360000
+      traefik.frontend.headers.STSIncludeSubdomains: "true"
+      traefik.frontend.headers.STSPreload: "true"
+      traefik.frontend.headers.customResponseHeaders: X-Robots-Tag:noindex,nofollow,nosnippet,noarchive,notranslate,noimageindex
+      traefik.frontend.headers.frameDeny: "true"
+      traefik.frontend.headers.customFrameOptionsValue: 'allow-from https:${DOMAINNAME}'
+    restart: always
