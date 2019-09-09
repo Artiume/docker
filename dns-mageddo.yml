@@ -1,0 +1,11 @@
+version: "3.7"
+
+services:
+  dns-mageddo:
+    image: defreitas/dns-proxy-server
+    container_name: dns-mageddo
+    hostname: dns-mageddo
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /etc/resolv.conf:/etc/resolv.conf
+    restart: always
