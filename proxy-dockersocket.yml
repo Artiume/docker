@@ -1,0 +1,25 @@
+version: "3.7"
+
+networks:
+  proxy-dockersocket:
+    name: proxy-dockersocket
+
+services:
+  docker-socket-proxy:
+    image: tecnativa/docker-socket-proxy
+    container_name: docker-socket-proxy
+    hostname: docker-socket-proxy
+    command:
+      - "--priviledged"
+    ports:
+      - "127.0.0.1:2375:2375"
+    networks:
+      proxy-dockersocket:
+    environment:
+      SERVICES: 1
+      NETWORKS: 1
+      TASKS: 1
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /etc/localtime:/etc/localtime:ro
+    restart: always
