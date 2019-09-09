@@ -1,21 +1,27 @@
----
 version: "3.7"
+networks:
+  traefik:
+    name: traefik
+
 services:
   jackett:
     image: linuxserver/jackett
     container_name: jackett
+    hostname: jackett
     networks:
       traefik:
+    dns:
+      - 192.168.1.1
     environment:
-      PUID: 1000
-      PGID: 1000
+      PUID: ${PUID}
+      PGID: ${PGID}
       TZ: ${TZ}
 #      RUN_OPTS: run options here #optional
     volumes:
       - ${USERDIR}/jackett:/config
       - /data/downloads:/downloads
-    ports:
-      - 9117:9117
+#    ports:
+#      - 9117:9117
     labels:
       traefik.enable: "true"
       traefik.docker.network: traefik
@@ -27,7 +33,7 @@ services:
       traefik.frontend.auth.forward.authResponseHeaders: X-Forwarded-User
       traefik.frontend.auth.forward.trustForwardHeader: "true"
       traefik.frontend.headers.SSLForceHost: "true"
-      traefik.frontend.headers.SSLHost: jackett.${DOMAINNAME}, ${DOMAINNAME}
+      traefik.frontend.headers.SSLHost: jackett.${DOMAINNAME}
       traefik.frontend.headers.SSLRedirect: "true"
       traefik.frontend.headers.browserXSSFilter: "true"
       traefik.frontend.headers.contentTypeNosniff: "true"
@@ -38,8 +44,4 @@ services:
       traefik.frontend.headers.customResponseHeaders: X-Robots-Tag:noindex,nofollow,nosnippet,noarchive,notranslate,noimageindex
       traefik.frontend.headers.frameDeny: "true"
       traefik.frontend.headers.customFrameOptionsValue: 'allow-from https:${DOMAINNAME}'
-    restart: unless-stopped
-
-networks:
-  traefik:
-    name: traefik
+    restart: always
