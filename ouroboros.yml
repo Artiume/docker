@@ -1,0 +1,23 @@
+version: '3.7'
+networks:
+  ouroboros:
+    name: ouroboros
+
+services:
+  ouroboros:
+    image: pyouroboros/ouroboros
+    container_name: ouroboros
+    hostname: ouroboros
+    networks:
+      - ouroboros
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      TZ: ${TZ}
+      INTERVAL: 86400
+      LOG_LEVEL: debug
+      SELF_UPDATE: "true"
+      CLEANUP: "true"
+      IGNORE: mongo influxdb postgres mariadb
+      NOTIFIERS: "pover://ughqbzk115dcj6rqagqs2resy7st26@ak6dmwkk34jespmdju4657pa3thy64"
+    restart: always
