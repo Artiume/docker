@@ -1,0 +1,51 @@
+version: "3.7"
+
+networks:
+  traefik:
+    name: traefik
+
+services:
+  jellyfin:
+    image: jellyfin/jellyfin:latest
+    container_name: jellyfin
+    hostname: jellyfin
+    networks:
+      traefik:
+    dns:
+      - 192.168.1.1
+#    ports:
+#      - "8096:8096"
+#      - "8920:8920"
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
+      UMASK_SET: 022
+    volumes:
+      - ${USERDIR}/jellyfin:/config
+      - /dev/shm:/ram_transcode
+      - /media:/media:ro
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: traefik
+      traefik.backend: jellyfin
+      traefik.protocol: http
+      traefik.port: 8096
+      traefik.frontend.rule: Host:jellyfin.${DOMAINNAME},
+#      traefik.frontend.auth.forward.address: http://traefik-forward-auth:4181
+#      traefik.frontend.auth.forward.authResponseHeaders: X-Forwarded-User
+#      traefik.frontend.auth.forward.trustForwardHeader: "true"
+      traefik.frontend.passHostHeader: "true"
+      traefik.frontend.headers.SSLForceHost: "true"
+      traefik.frontend.headers.SSLHost: jellyfin.${DOMAINNAME}
+      traefik.frontend.headers.SSLRedirect: "true"
+      traefik.frontend.headers.browserXSSFilter: "true"
+      traefik.frontend.headers.contentTypeNosniff: "true"
+      traefik.frontend.headers.forceSTSHeader: "true"
+      traefik.frontend.headers.STSSeconds: 315360000
+      traefik.frontend.headers.STSIncludeSubdomains: "true"
+      traefik.frontend.headers.STSPreload: "true"
+      traefik.frontend.headers.customResponseHeaders: X-Robots-Tag:noindex,nofollow,nosnippet,noarchive,notranslate,noimageindex
+      traefik.frontend.headers.frameDeny: "true"
+      traefik.frontend.headers.customFrameOptionsValue: 'allow-from https://${DOMAINNAME}'
+    restart: always
