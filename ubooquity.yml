@@ -1,0 +1,53 @@
+version: "3.7"
+networks:
+  traefik:
+    name: traefik
+
+services:
+  ubooquity:
+    image: linuxserver/ubooquity
+    container_name: ubooquity
+    hostname: ubooquity
+    networks:
+      traefik:
+    dns:
+      - 192.168.1.1
+#    ports:
+#      - 2202:2202
+#      - 2203:2203
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: ${TZ}
+      MAXMEM: "512m"
+    volumes:
+      - ${USERDIR}/ubooquity:/config
+      - ${USERDIR}/books:/books
+      - ${USERDIR}/comics:/comics
+      - ${USERDIR}:/files
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: traefik
+      traefik.backend: ubooquity
+      traefik.protocol: http
+      traefik.web.frontend.rule: Host:ubooquity.${DOMAINNAME}
+      traefik.web.port: 2202
+      traefik.admin.frontend.rule: Host:ubooquity.${DOMAINNAME};PathPrefix:/admin,/admin-res,/admin-api
+      traefik.admin.port: 2203
+      traefik.frontend.auth.forward.address: http://traefik-forward-auth:4181
+      traefik.frontend.auth.forward.authResponseHeaders: X-Forwarded-User
+      traefik.frontend.auth.forward.trustForwardHeader: "true"
+      traefik.frontend.passHostHeader: "true"
+      traefik.frontend.headers.SSLForceHost: "true"
+      traefik.frontend.headers.SSLHost: ubooquity.${DOMAINNAME}
+      traefik.frontend.headers.SSLRedirect: "true"
+      traefik.frontend.headers.browserXSSFilter: "true"
+      traefik.frontend.headers.contentTypeNosniff: "true"
+      traefik.frontend.headers.forceSTSHeader: "true"
+      traefik.frontend.headers.STSSeconds: 315360000
+      traefik.frontend.headers.STSIncludeSubdomains: "true"
+      traefik.frontend.headers.STSPreload: "true"
+      traefik.frontend.headers.customResponseHeaders: X-Robots-Tag:noindex,nofollow,nosnippet,noarchive,notranslate,noimageindex
+      traefik.frontend.headers.frameDeny: "true"
+      traefik.frontend.headers.customFrameOptionsValue: 'allow-from https://${DOMAINNAME}'
+    restart: always
