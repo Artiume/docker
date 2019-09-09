@@ -1,6 +1,9 @@
 # https://hub.docker.com/r/jlesage/firefox/
----
 version: "3.7"
+networks:
+  traefik:
+    name: traefik
+
 services:
   firefox:
     image: jlesage/firefox
@@ -13,11 +16,8 @@ services:
       - CLEAN_TMP_DIR=1
       - DISPLAY_WIDTH=1600
       - DISPLAY_HEIGHT=960
-#    network_mode: service:vpn-proxy
-#    build:
-#      network: host
     networks:
-      - traefik
+      traefik:
     dns:
       - 192.168.1.1
     volumes:
@@ -31,12 +31,21 @@ services:
       traefik.backend: firefox
       traefik.protocol: http
       traefik.port: 5800
-      traefik.frontend.rule: Host:firefox.${DOMAINNAME},
+      traefik.frontend.rule: Host:firefox.${DOMAINNAME}
       traefik.frontend.auth.forward.address: http://traefik-forward-auth:4181
       traefik.frontend.auth.forward.authResponseHeaders: X-Forwarded-User
       traefik.frontend.auth.forward.trustForwardHeader: "true"
+      traefik.frontend.passHostHeader: "true"
+      traefik.frontend.headers.SSLForceHost: "true"
+      traefik.frontend.headers.SSLHost: firefox.${DOMAINNAME}
+      traefik.frontend.headers.SSLRedirect: "true"
+      traefik.frontend.headers.browserXSSFilter: "true"
+      traefik.frontend.headers.contentTypeNosniff: "true"
+      traefik.frontend.headers.forceSTSHeader: "true"
+      traefik.frontend.headers.STSSeconds: 315360000
+      traefik.frontend.headers.STSIncludeSubdomains: "true"
+      traefik.frontend.headers.STSPreload: "true"
+      traefik.frontend.headers.customResponseHeaders: X-Robots-Tag:noindex,nofollow,nosnippet,noarchive,notranslate,noimageindex
+      traefik.frontend.headers.frameDeny: "true"
+      traefik.frontend.headers.customFrameOptionsValue: 'allow-from https:${DOMAINNAME}'
     restart: always
-
-networks:
-  traefik:
-    name: traefik
