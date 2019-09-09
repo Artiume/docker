@@ -1,0 +1,49 @@
+version: '3.7'
+
+networks:
+  traefik:
+    name: traefik
+
+services:
+  heimdall:
+    image: linuxserver/heimdall
+    container_name: heimdall
+    hostname: heimdall
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+      HOME: /config
+      TZ: ${TZ}
+#    ports:
+#      - "16004:80"
+#      - "16005:443"
+    volumes:
+      - ${USERDIR}/heimdall:/config
+    networks:
+      traefik:
+    dns:
+      - 192.168.1.1
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: traefik
+      traefik.backend: heimdall
+      traefik.protocol: http
+      traefik.port: 80
+      traefik.frontend.rule: Host:heimdall.${DOMAINNAME}
+      traefik.frontend.auth.forward.address: http://traefik-forward-auth:4181
+      traefik.frontend.auth.forward.authResponseHeaders: X-Forwarded-User
+      traefik.frontend.auth.forward.trustForwardHeader: "true"
+      traefik.frontend.passHostHeader: "true"
+      traefik.frontend.headers.SSLForceHost: "true"
+      traefik.frontend.headers.SSLHost: heimdall.${DOMAINNAME}
+      traefik.frontend.headers.SSLRedirect: "true"
+      traefik.frontend.headers.browserXSSFilter: "true"
+      traefik.frontend.headers.contentTypeNosniff: "true"
+      traefik.frontend.headers.forceSTSHeader: "true"
+      traefik.frontend.headers.STSSeconds: 315360000
+      traefik.frontend.headers.STSIncludeSubdomains: "true"
+      traefik.frontend.headers.STSPreload: "true"
+      traefik.frontend.headers.customResponseHeaders: X-Robots-Tag:noindex,nofollow,nosnippet,noarchive,notranslate,noimageindex
+      traefik.frontend.headers.frameDeny: "true"
+      traefik.frontend.headers.customFrameOptionsValue: 'allow-from https:${DOMAINNAME}'
+    restart: always
