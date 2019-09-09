@@ -17,8 +17,8 @@ services:
 #      - "8686:8686"
     volumes:
       - ${USERDIR}/lidarr:/config
-      - /data/unionfs:/data
-      - /data/bricks/node6/sabnzbd/complete:/complete
+      - /media:/media
+      - ${USERDIR}/sabnzbd/complete:/complete
     environment:
       PUID: ${PUID}
       PGID: ${PGID}
@@ -30,7 +30,6 @@ services:
       traefik.frontend.redirect.entryPoint: https
       traefik.frontend.rule: Host:lidarr.${DOMAINNAME},
       traefik.port: 8686
-      traefik.frontend.priority: 1
       traefik.backend: lidarr
       traefik.docker.network: traefik
       traefik.frontend.headers.SSLHost: lidarr.${DOMAINNAME}, ${DOMAINNAME}
