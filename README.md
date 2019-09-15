@@ -17,6 +17,7 @@ Here's some good information to learn about
 <br> https://dnsprivacy.org/wiki/display/DP/DNS+Privacy+Project+Homepage
 <br> https://openvpn.net/security-advisory/the-voracle-attack-vulnerability/
 <br> https://www.cisecurity.org/cis-benchmarks/
+<br> https://matt.traudt.xyz/posts/vpn-tor-not-mRikAa4h.html
 
 
 I am currently working on creating a frontend and backend traefik which will remove the socket access to the traefik facing the internet.
