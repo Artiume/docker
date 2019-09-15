@@ -19,7 +19,7 @@ Here's some good information to learn about
 <br> https://www.cisecurity.org/cis-benchmarks/
 <br> https://matt.traudt.xyz/posts/vpn-tor-not-mRikAa4h.html
 <br> https://en.wikipedia.org/wiki/Salt_(cryptography)
-
+<br> https://blog.qualys.com/ssllabs/2012/09/14/crime-information-leakage-attack-against-ssltls
 
 I am currently working on creating a frontend and backend traefik which will remove the socket access to the traefik facing the internet.
 
