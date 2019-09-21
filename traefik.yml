@@ -2,7 +2,7 @@ version: '3.7'
 
 services:
   traefik:
-    image: traefik:latest
+    image: traefik:v1.7.16
     container_name: traefik
     command: 
 #      - "storeconfig" #This is the push to consul, secondary traefik must be created and interfaced to this traefik. Remove this traefik's open ports, it shuts down once consul is messaged.
