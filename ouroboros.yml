@@ -19,5 +19,5 @@ services:
       SELF_UPDATE: "true"
       CLEANUP: "true"
       IGNORE: mongo influxdb postgres mariadb
-      NOTIFIERS: "pover://ughqbzk115dcj6rqagqs2resy7st26@ak6dmwkk34jespmdju4657pa3thy64"
+      NOTIFIERS: "pover://ughqbzk115dcj6pa3thy64"
     restart: always
