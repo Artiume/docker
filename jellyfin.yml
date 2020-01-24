@@ -1,32 +1,33 @@
 version: "3.7"
 
-networks:
-  traefik:
-    name: traefik
+#networks:
+#  traefik:
+#    name: traefik
 
 services:
   jellyfin:
     image: jellyfin/jellyfin:latest
     container_name: jellyfin
-    hostname: jellyfin
-    networks:
-      traefik:
-    dns:
-      - 192.168.1.1
+#    hostname: jellyfin
+#    networks:
+#      traefik:
+    network_mode: host
+#    dns:
+#      - 192.168.1.1
 #    ports:
 #      - "8096:8096"
 #      - "8920:8920"
-    environment:
-      PUID: ${PUID}
-      PGID: ${PGID}
-      TZ: ${TZ}
-      UMASK_SET: 022
+#    environment:
+#      PUID: ${PUID}
+#      PGID: ${PGID}
+#      TZ: ${TZ}
+#      UMASK_SET: 022
     volumes:
       - ${USERDIR}/jellyfin:/config
       - /dev/shm:/ram_transcode
       - /media:/media:ro
     labels:
-      traefik.enable: "true"
+      traefik.enable: "false"
       traefik.docker.network: traefik
       traefik.backend: jellyfin
       traefik.protocol: http
