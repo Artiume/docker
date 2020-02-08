@@ -13,7 +13,7 @@ services:
 #      - "80:80"
 #      - "3012:3012"
     volumes:
-      - $USERDIR/docker/bitwarden:/data
+      - $USERDIR/bitwarden:/data
       - /var/log/docker:/var/log/docker
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
