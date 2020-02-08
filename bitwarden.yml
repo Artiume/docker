@@ -41,6 +41,9 @@ services:
 #      ## Admin Page - Used when DISABLE_ADMIN_TOKEN=true above
 #      - "traefik.admin.frontend.rule=Host:bitwarden.$DOMAINNAME;Path:/admin"
 #      - "traefik.admin.port=80"
+      - "traefik.frontend.auth.forward.address=http://traefik-forward-auth:4181
+      - "traefik.frontend.auth.forward.authResponseHeaders=X-Forwarded-User
+      - "traefik.frontend.auth.forward.trustForwardHeader=true"
       - "traefik.docker.network=traefik"
       - "traefik.frontend.headers.SSLRedirect=true"
       - "traefik.frontend.headers.STSSeconds=315360000"
