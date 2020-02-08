@@ -1,0 +1,91 @@
+version: "3.7"
+services:
+
+## Bitwarden - Password Vault
+  bitwarden:
+    container_name: bitwarden
+    image: bitwardenrs/server:latest
+    restart: always
+    networks:
+      - traefik_proxy
+      - bw-net
+#    ports:
+#      - "80:80"
+#      - "3012:3012"
+    volumes:
+      - $USERDIR/docker/bitwarden:/data
+      - /var/log/docker:/var/log/docker
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - SIGNUPS_ALLOWED=false # Change to false after first login
+      - INVITATIONS_ALLOWED=true # Send invitation using admin page
+      - WEBSOCKET_ENABLED=true
+      - LOG_FILE=/var/log/docker/bitwarden.log
+      - SMTP_HOST=smtp.gmail.com
+      - SMTP_FROM=$SMTP_EMAIL
+      - SMTP_PORT=587
+      - SMTP_SSL=true
+      - SMTP_USERNAME=$SMTP_EMAIL
+      - SMTP_PASSWORD=$SMTP_PASS
+      - DOMAIN=https://bitwarden.$DOMAINNAME
+### USE WITH CAUTION!! Access admin page at bitwarden.$DOMAINNAME/admin to send invitations - anyone can access, add authorization!!!
+#      - DISABLE_ADMIN_TOKEN=true 
+    labels:
+      - "traefik.enable=true"
+      - "traefik.web.frontend.rule=Host:bitwarden.$DOMAINNAME"
+      - "traefik.web.port=80"
+      - "traefik.hub.frontend.rule=Host:bitwarden.$DOMAINNAME;Path:/notifications/hub"
+      - "traefik.hub.port=3012"
+      - "traefik.hub.protocol=ws"
+#      ## Admin Page - Used when DISABLE_ADMIN_TOKEN=true above
+#      - "traefik.admin.frontend.rule=Host:bitwarden.$DOMAINNAME;Path:/admin"
+#      - "traefik.admin.port=80"
+      - "traefik.docker.network=traefik"
+      - "traefik.frontend.headers.SSLRedirect=true"
+      - "traefik.frontend.headers.STSSeconds=315360000"
+      - "traefik.frontend.headers.browserXSSFilter=true"
+      - "traefik.frontend.headers.contentTypeNosniff=true"
+      - "traefik.frontend.headers.forceSTSHeader=true"
+      - "traefik.frontend.headers.SSLHost=bitwarden.$DOMAINNAME"
+      - "traefik.frontend.headers.SSLForceHost=true"
+      - "traefik.frontend.headers.STSIncludeSubdomains=true"
+      - "traefik.frontend.headers.STSPreload=true"
+      - "traefik.frontend.headers.customResponseHeaders: X-Robots-Tag:noindex,nofollow,nosnippet,noarchive,notranslate,noimageindex"
+      - "traefik.frontend.headers.frameDeny=true"
+
+## Bitwarden Backup
+
+  ## To restore database from backup:
+    # docker exec -it bitwarden bash
+    # mv /data/db.sqlite3 /data/db.sqlite3.back
+    # sqlite3 /data/db.sqlite3 ".restore '/data/db-backup/select_db_file'"
+    # exit
+
+  bw_backup:
+    container_name: bw_backup
+    image: bruceforce/bw_backup
+    init: true
+    networks:
+      - bw-net
+    volumes:
+      - $USERDIR/docker/bitwarden:/data
+      - /mnt/storage/misc/backup/backup_databases/bitwarden:/dbbackup
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - DB_FILE=/data/db.sqlite3
+      - BACKUP_FILE=/dbbackup/backup.sqlite3
+      - CRON_TIME=30 4 * * *
+      - TIMESTAMP=true
+      - UID=0
+      - GID=0
+    restart: on-failure
+    depends_on:
+      - bitwarden
+
+networks:
+  traefik:
+    external: true
+  bw-net:
+    external: false
