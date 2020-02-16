@@ -12,6 +12,7 @@ Test your website here!
 
 Dns Leak Tests
 https://github.com/macvk/dnsleaktest/blob/master/README.md 
+https://www.privateinternetaccess.com/forum/discussion/23924/easy-quick-dns-and-ipv6-leak-testing-via-command-prompt-line-method-no-browser-or-website-needed
 
 Here's some good information to learn about 
 <br> https://github.com/ssllabs/research/wiki/SSL-and-TLS-Deployment-Best-Practices#25-use-forward-secrecy 
