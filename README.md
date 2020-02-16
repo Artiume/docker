@@ -28,3 +28,6 @@ Here's some good information to learn about
 I am currently working on creating a frontend and backend traefik which will remove the socket access to the traefik facing the internet.
 
 I want to also get a elevated permissions proxy setup for the system https://github.com/Tecnativa/docker-socket-proxy 
+
+Reading :
+https://www.wired.com/story/notpetya-cyberattack-ukraine-russia-code-crashed-the-world/
