@@ -10,6 +10,9 @@ Test your website here!
 <br> https://www.grc.com/dns/dns.htm
 <br> https://securityheaders.com/
 
+Dns Leak Tests
+https://github.com/macvk/dnsleaktest/blob/master/README.md 
+
 Here's some good information to learn about 
 <br> https://github.com/ssllabs/research/wiki/SSL-and-TLS-Deployment-Best-Practices#25-use-forward-secrecy 
 <br> https://scotthelme.co.uk/https-cheat-sheet/
