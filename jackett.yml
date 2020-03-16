@@ -1,4 +1,4 @@
-version: "3.7"
+version: "2"
 networks:
   traefik:
     name: traefik
@@ -15,13 +15,13 @@ services:
     environment:
       PUID: ${PUID}
       PGID: ${PGID}
-      TZ: ${TZ}
+      TZ: Europe/London
 #      RUN_OPTS: run options here #optional
     volumes:
-      - ${USERDIR}/jackett:/config
-      - /data/downloads:/downloads
-#    ports:
-#      - 9117:9117
+      - /media/tom/Docker/Jackett/config:/config
+      - /media/tom/Downloads:/downloads
+    ports:
+      - 9117:9117
     labels:
       traefik.enable: "true"
       traefik.docker.network: traefik
