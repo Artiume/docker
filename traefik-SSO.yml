@@ -46,7 +46,7 @@ services:
       - "--docker.exposedbydefault=false"
       - "--retry"
 #      - "--file"
-      - "resolvers=[192,168.1.1:53,1.1.1.1:53,]"
+      - "resolvers=[192.168.1.1:53,1.1.1.1:53,]"
     environment:
       TZ: ${TZ}
 #      CLOUDFLARE_EMAIL: ${EMAIL}
