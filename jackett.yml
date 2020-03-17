@@ -1,7 +1,6 @@
 version: "2"
 networks:
   traefik:
-    name: traefik
 
 services:
   jackett:
@@ -29,6 +28,7 @@ services:
       traefik.protocol: http
       traefik.port: 9117
       traefik.frontend.rule: Host:jackett.${DOMAINNAME},
+      traefik.frontend.auth.basic.users: ${TRAEFIK_BASIC_USER}
       traefik.frontend.auth.forward.address: http://traefik-forward-auth:4181
       traefik.frontend.auth.forward.authResponseHeaders: X-Forwarded-User
       traefik.frontend.auth.forward.trustForwardHeader: "true"
