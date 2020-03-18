@@ -13,14 +13,15 @@ services:
     environment:
       PUID: ${PUID}
       PGID: ${PGID}
-      TZ: ${TZ}
+      TZ: Europe/London
       UMASK_SET: 022 #optional
     volumes:
-      - ${USERDIR}/bazarr:/config
-      - ${USERDIR}/media/movies:/movies
-      - ${USERDIR}/media/tvshows:/tv
-#    ports:
-#      - 6767:6767
+      - /media/tom/Docker/Bazarr/config:/config
+      - /media/tom/Elements2/Series HD:/media1
+      - /media/tom/Elements/Series HD:/media2
+      - /media/tom:/data/movies
+    ports:
+      - 6767:6767
     labels:
       traefik.enable: "true"
       traefik.docker.network: traefik
@@ -28,6 +29,7 @@ services:
       traefik.protocol: http
       traefik.port: 6767
       traefik.frontend.rule: Host:bazarr.${DOMAINNAME}
+      traefik.frontend.auth.basic.users: ${TRAEFIK_BASIC_USER}
       traefik.frontend.auth.forward.address: http://traefik-forward-auth:4181
       traefik.frontend.auth.forward.authResponseHeaders: X-Forwarded-User
       traefik.frontend.auth.forward.trustForwardHeader: "true"
