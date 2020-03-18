@@ -28,8 +28,8 @@ services:
       traefik.backend: bazarr
       traefik.protocol: http
       traefik.port: 6767
-      traefik.frontend.rule: Host:bazarr.${DOMAINNAME}
-      traefik.frontend.auth.basic.users: ${TRAEFIK_BASIC_USER}
+      traefik.frontend.rule: "Host:bazarr.${DOMAINNAME}" 
+      traefik.frontend.auth.basic.users: "${TRAEFIK_BASIC_USER}" 
 #      traefik.frontend.auth.forward.address: http://traefik-forward-auth:4181
 #      traefik.frontend.auth.forward.authResponseHeaders: X-Forwarded-User
 #      traefik.frontend.auth.forward.trustForwardHeader: "true"
