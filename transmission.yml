@@ -28,7 +28,7 @@ services:
       traefik.docker.network: traefik
       traefik.backend: transmission
       traefik.protocol: http
-      traefik.port: 9117
+      traefik.port: 9091
       traefik.frontend.rule: Host:transmission.${DOMAINNAME},
       traefik.frontend.auth.basic.users: ${TRAEFIK_BASIC_USER}
       traefik.frontend.auth.forward.address: http://traefik-forward-auth:4181
