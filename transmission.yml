@@ -1,0 +1,49 @@
+version: "3.7"
+networks:
+  traefik:
+    name: traefik
+services:
+  transmission:
+    image: linuxserver/transmission
+    container_name: transmission
+    hostname: transmission
+    networks:
+      traefik:
+    environment:
+      PUID: ${PUID}
+      PGID: ${PGID}
+      TZ: Europe/London
+      USER: ${TRANSMISSION_LOGIN}
+      PASS: ${TRANSMISSION_PASS} #optional
+    volumes:
+      - /media/tom/Docker/Transmission/config:/config
+      - /media/tom/Docker/Transmission/:/downloads
+      - /media/tom/Docker/Transmission:/watch
+    ports:
+      - 9091:9091
+      - 51413:51413
+      - 51413:51413/udp
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: traefik
+      traefik.backend: transmission
+      traefik.protocol: http
+      traefik.port: 9117
+      traefik.frontend.rule: Host:transmission.${DOMAINNAME},
+      traefik.frontend.auth.basic.users: ${TRAEFIK_BASIC_USER}
+      traefik.frontend.auth.forward.address: http://traefik-forward-auth:4181
+      traefik.frontend.auth.forward.authResponseHeaders: X-Forwarded-User
+      traefik.frontend.auth.forward.trustForwardHeader: "true"
+      traefik.frontend.headers.SSLForceHost: "true"
+      traefik.frontend.headers.SSLHost: transmission.${DOMAINNAME}
+      traefik.frontend.headers.SSLRedirect: "true"
+      traefik.frontend.headers.browserXSSFilter: "true"
+      traefik.frontend.headers.contentTypeNosniff: "true"
+      traefik.frontend.headers.forceSTSHeader: "true"
+      traefik.frontend.headers.STSSeconds: 315360000
+      traefik.frontend.headers.STSIncludeSubdomains: "true"
+      traefik.frontend.headers.STSPreload: "true"
+      traefik.frontend.headers.customResponseHeaders: X-Robots-Tag:noindex,nofollow,nosnippet,noarchive,notranslate,noimageindex
+      traefik.frontend.headers.frameDeny: "true"
+      traefik.frontend.headers.customFrameOptionsValue: 'allow-from https:${DOMAINNAME}'
+    restart: always
