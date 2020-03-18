@@ -1,6 +1,8 @@
-version: "2"
+version: "3.7"
 networks:
   traefik:
+    name: traefik
+
 
 services:
   jackett:
@@ -9,8 +11,6 @@ services:
     hostname: jackett
     networks:
       traefik:
-    dns:
-      - 192.168.1.1
     environment:
       PUID: ${PUID}
       PGID: ${PGID}
