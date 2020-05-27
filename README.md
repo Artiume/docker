@@ -15,6 +15,7 @@ Dns Leak Tests
 <br> https://www.privateinternetaccess.com/forum/discussion/23924/easy-quick-dns-and-ipv6-leak-testing-via-command-prompt-line-method-no-browser-or-website-needed
 
 Here's some good information to learn about 
+<br> https://www.acunetix.com/blog/articles/a-fresh-look-on-reverse-proxy-related-attacks
 <br> https://github.com/ssllabs/research/wiki/SSL-and-TLS-Deployment-Best-Practices#25-use-forward-secrecy 
 <br> https://scotthelme.co.uk/https-cheat-sheet/
 <br> https://www.toptenreviews.com/secure-encryption-methods
