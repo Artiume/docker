@@ -9,6 +9,7 @@ Test your website here!
 <br> https://www.ssllabs.com/ssltest/
 <br> https://www.grc.com/dns/dns.htm
 <br> https://securityheaders.com/
+<br> https://observatory.mozilla.org/
 
 Dns Leak Tests
 <br> https://github.com/macvk/dnsleaktest/blob/master/README.md 
